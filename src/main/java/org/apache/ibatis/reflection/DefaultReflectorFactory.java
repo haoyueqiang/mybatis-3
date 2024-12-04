@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.apache.ibatis.reflection;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,22 +22,47 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.ibatis.util.MapUtil;
 
 public class DefaultReflectorFactory implements ReflectorFactory {
+
+  /**
+   * 是否缓存 Reflector 对象
+   */
   private boolean classCacheEnabled = true;
+
+  /**
+   * Reflector 的缓存映射
+   * <p>
+   * KEY：类
+   * VALUE：Reflector 对象
+   */
   private final ConcurrentMap<Class<?>, Reflector> reflectorMap = new ConcurrentHashMap<>();
 
   public DefaultReflectorFactory() {
   }
 
+  /**
+   * @return 是否缓存 Reflector 对象
+   */
   @Override
   public boolean isClassCacheEnabled() {
     return classCacheEnabled;
   }
 
+  /**
+   * 设置是否缓存 Reflector 对象
+   *
+   * @param classCacheEnabled 是否缓存
+   */
   @Override
   public void setClassCacheEnabled(boolean classCacheEnabled) {
     this.classCacheEnabled = classCacheEnabled;
   }
 
+  /**
+   * 获取 Reflector 对象
+   *
+   * @param type 指定类
+   * @return 对象
+   */
   @Override
   public Reflector findForClass(Class<?> type) {
     if (classCacheEnabled) {

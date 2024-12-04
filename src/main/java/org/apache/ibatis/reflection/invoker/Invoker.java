@@ -13,15 +13,31 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.apache.ibatis.reflection.invoker;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
+ * 调用者接口
+ *
  * @author Clinton Begin
  */
 public interface Invoker {
+
+  /**
+   * 执行调用
+   *
+   * @param target 目标
+   * @param args   参数
+   * @return 结果
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
   Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException;
 
+  /**
+   * @return 返回属性类型
+   */
   Class<?> getType();
 }
