@@ -13,43 +13,105 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.apache.ibatis.reflection.wrapper;
 
 import java.util.List;
 
+import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.ReflectorFactory;
 import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 对象包装器接口，基于 MetaClass 工具类，定义对指定对象的各种操作。或者可以说，ObjectWrapper 是 MetaClass 的指定类的具象化。
+ *
  * @author Clinton Begin
  */
 public interface ObjectWrapper {
 
-  Object get(PropertyTokenizer prop);
+    /**
+     * 获得值
+     *
+     * @param prop PropertyTokenizer 对象，相当于键
+     * @return 值
+     */
+    Object get(PropertyTokenizer prop);
 
-  void set(PropertyTokenizer prop, Object value);
+    /**
+     * 设置值
+     *
+     * @param prop  PropertyTokenizer 对象，相当于键
+     * @param value 值
+     */
+    void set(PropertyTokenizer prop, Object value);
 
-  String findProperty(String name, boolean useCamelCaseMapping);
+    /**
+     * {@link org.apache.ibatis.reflection.MetaClass#findProperty(String, boolean)}
+     */
+    String findProperty(String name, boolean useCamelCaseMapping);
 
-  String[] getGetterNames();
+    /**
+     * {@link MetaClass#getGetterNames()}
+     *
+     * @return
+     */
+    String[] getGetterNames();
 
-  String[] getSetterNames();
+    /**
+     * ${@link MetaClass#getSetterNames()}
+     *
+     * @return
+     */
+    String[] getSetterNames();
 
-  Class<?> getSetterType(String name);
+    /**
+     * 获得 setting 方法的方法参数类型
+     * {@link MetaClass#getSetterType(String)}
+     *
+     * @param name
+     * @return
+     */
+    Class<?> getSetterType(String name);
 
-  Class<?> getGetterType(String name);
+    /**
+     * 获得指定属性的 getting 方法的返回值
+     * {@link MetaClass#getGetterType(PropertyTokenizer)}
+     *
+     * @param name
+     * @return
+     */
+    Class<?> getGetterType(String name);
 
-  boolean hasSetter(String name);
+    /**
+     * {@link MetaClass#hasSetter(String)}
+     */
+    boolean hasSetter(String name);
 
-  boolean hasGetter(String name);
+    /**
+     * {@link MetaClass#hasGetter(String)}
+     */
+    boolean hasGetter(String name);
 
-  MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
+    /**
+     * {@link MetaObject#forObject(Object, ObjectFactory, ObjectWrapperFactory, ReflectorFactory)}
+     */
+    MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
 
-  boolean isCollection();
+    /**
+     * 是否为集合
+     */
+    boolean isCollection();
 
-  void add(Object element);
+    /**
+     * 添加元素到集合
+     */
+    void add(Object element);
 
-  <E> void addAll(List<E> element);
+    /**
+     * 添加多个元素到集合
+     */
+    <E> void addAll(List<E> element);
 
 }

@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 /**
  * Provides hashCode, equals and toString methods that can handle array.
+ * 数组工具类
  */
 public class ArrayUtil {
 

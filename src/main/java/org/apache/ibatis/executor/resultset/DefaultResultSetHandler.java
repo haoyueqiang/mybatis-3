@@ -334,6 +334,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       checkResultHandler();
       handleRowValuesForNestedResultMap(rsw, resultMap, resultHandler, rowBounds, parentMapping);
     } else {
+      // 由于我们在映射文件中没有定义额外的ResultMap，因此会直接进入else分支的代码。
       handleRowValuesForSimpleResultMap(rsw, resultMap, resultHandler, rowBounds, parentMapping);
     }
   }
@@ -363,6 +364,8 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     skipRows(resultSet, rowBounds);
     while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
       ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
+
+      // 进入handleRowValuesForSimpleResultMap中，主要处理函数如下，在这里完成了对象的生成及赋值。
       Object rowValue = getRowValue(rsw, discriminatedResultMap, null);
       storeObject(resultHandler, resultContext, rowValue, parentMapping, resultSet);
     }
@@ -413,6 +416,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       final MetaObject metaObject = configuration.newMetaObject(rowValue);
       boolean foundValues = this.useConstructorMappings;
       if (shouldApplyAutomaticMappings(resultMap, false)) {
+        // 在applyAutomaticMappings完成了整个过程，我们进去探一探。
         foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
       }
       foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
@@ -553,6 +557,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
           }
           propertyName = columnName.substring(columnPrefix.length());
         }
+
         final String property = metaObject.findProperty(propertyName, configuration.isMapUnderscoreToCamelCase());
         if (property != null && metaObject.hasSetter(property)) {
           if (resultMap.getMappedProperties().contains(property)) {
@@ -579,6 +584,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private boolean applyAutomaticMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject,
       String columnPrefix) throws SQLException {
+    // createAutomaticMappings ： 处理映射关系
     List<UnMappedColumnAutoMapping> autoMapping = createAutomaticMappings(rsw, resultMap, metaObject, columnPrefix);
     boolean foundValues = false;
     if (!autoMapping.isEmpty()) {

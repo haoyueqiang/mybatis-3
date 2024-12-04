@@ -53,6 +53,14 @@ class ArrayUtilTest {
   }
 
   @Test
+  void testHashCodeMy() {
+    Object arr;
+    arr = new int[]{1,2};
+    System.out.println(ArrayUtil.hashCode(arr));
+    assertEquals(Arrays.hashCode((int[]) arr), ArrayUtil.hashCode(arr));
+  }
+
+  @Test
   void testequals() {
     assertTrue(ArrayUtil.equals(new long[] { 1 }, new long[] { 1 }));
     assertTrue(ArrayUtil.equals(new int[] { 1 }, new int[] { 1 }));

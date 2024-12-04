@@ -21,11 +21,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.ibatis.reflection.ReflectionException;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +43,8 @@ class DefaultObjectFactoryTest {
   @Test
   void createClass() {
     DefaultObjectFactory defaultObjectFactory = new DefaultObjectFactory();
-    TestClass testClass = defaultObjectFactory.create(TestClass.class, Arrays.asList(String.class, Integer.class),
+    TestClass testClass = defaultObjectFactory
+      .create(TestClass.class, Arrays.asList(String.class, Integer.class),
         Arrays.asList("foo", 0));
 
     System.out.println(testClass);
@@ -81,7 +84,14 @@ class DefaultObjectFactoryTest {
     Assertions.assertTrue(collection instanceof ArrayList, " collection should be ArrayList");
 
     Iterable iterable = defaultObjectFactory.create(Iterable.class);
-    Assertions.assertTrue(iterable instanceof ArrayList, " iterable should be ArrayList");
+    Assertions.assertTrue(iterable instanceof LinkedList<?>, " iterable should be ArrayList");
+  }
+
+  @Test
+  void createMap() {
+    DefaultObjectFactory defaultObjectFactory = new DefaultObjectFactory();
+    Map list = defaultObjectFactory.create(Map.class);
+    Assertions.assertTrue(list instanceof HashMap<?,?>, " map should be ArrayList");
   }
 
   @Test

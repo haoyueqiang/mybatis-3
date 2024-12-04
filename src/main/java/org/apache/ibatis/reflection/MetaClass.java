@@ -28,24 +28,38 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
+ *
+ * org.apache.ibatis.reflection.MetaClass ，
+ * 类的元数据，基于 Reflector 和 PropertyTokenizer ，提供对指定类的各种骚操作。
  */
 public class MetaClass {
 
   private final ReflectorFactory reflectorFactory;
   private final Reflector reflector;
 
+  /**
+   * #forClass(Class<?> type, ReflectorFactory reflectorFactory) 静态方法，创建指定类的 MetaClass 对象。代码如下
+   * @param type
+   * @param reflectorFactory
+   * @return
+   */
+  public static MetaClass forClass(Class<?> type, ReflectorFactory reflectorFactory) {
+    return new MetaClass(type, reflectorFactory);
+  }
+
+  /**
+   * 通过构造方法，我们可以看出，一个 MetaClass 对象，对应一个 Class 对象。
+   * @param type
+   * @param reflectorFactory
+   */
   private MetaClass(Class<?> type, ReflectorFactory reflectorFactory) {
     this.reflectorFactory = reflectorFactory;
     this.reflector = reflectorFactory.findForClass(type);
   }
 
-  public static MetaClass forClass(Class<?> type, ReflectorFactory reflectorFactory) {
-    return new MetaClass(type, reflectorFactory);
-  }
-
   public MetaClass metaClassForProperty(String name) {
-    Class<?> propType = reflector.getGetterType(name);
-    return MetaClass.forClass(propType, reflectorFactory);
+    Class<?> propType = reflector.getGetterType(name); // 获得属性的类
+    return MetaClass.forClass(propType, reflectorFactory);  // 创建 MetaClass 对象
   }
 
   public String findProperty(String name) {
@@ -54,9 +68,11 @@ public class MetaClass {
   }
 
   public String findProperty(String name, boolean useCamelCaseMapping) {
+    // <1> 下划线转驼峰
     if (useCamelCaseMapping) {
       name = name.replace("_", "");
     }
+    // <2> 获得属性
     return findProperty(name);
   }
 
@@ -132,6 +148,8 @@ public class MetaClass {
     return null;
   }
 
+  //判断指定属性是否有 setter 方法
+
   public boolean hasSetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (!prop.hasNext()) {
@@ -144,7 +162,9 @@ public class MetaClass {
     return false;
   }
 
+  //判断指定属性是否有 getting 方法
   public boolean hasGetter(String name) {
+    // 创建 PropertyTokenizer 对象, 对 name 进行分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (!prop.hasNext()) {
       return reflector.hasGetter(prop.getName());

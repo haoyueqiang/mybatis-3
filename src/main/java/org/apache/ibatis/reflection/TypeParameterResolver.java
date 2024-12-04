@@ -27,6 +27,8 @@ import java.util.Arrays;
 
 /**
  * @author Iwao AVE!
+ *
+ * org.apache.ibatis.reflection.TypeParameterResolver ，工具类，java.lang.reflect.Type 参数解析器。
  */
 public class TypeParameterResolver {
 
@@ -116,6 +118,7 @@ public class TypeParameterResolver {
     return new GenericArrayTypeImpl(resolvedComponentType);
   }
 
+  // 解析 ParameterizedType 类型
   private static ParameterizedType resolveParameterizedType(ParameterizedType parameterizedType, Type srcType,
       Class<?> declaringClass) {
     Class<?> rawType = (Class<?>) parameterizedType.getRawType();
@@ -136,7 +139,9 @@ public class TypeParameterResolver {
   }
 
   private static Type resolveWildcardType(WildcardType wildcardType, Type srcType, Class<?> declaringClass) {
+    // <1.1> 解析泛型表达式下界（下限 super）
     Type[] lowerBounds = resolveWildcardTypeBounds(wildcardType.getLowerBounds(), srcType, declaringClass);
+    // <1.2> 解析泛型表达式上界（上限 extends）
     Type[] upperBounds = resolveWildcardTypeBounds(wildcardType.getUpperBounds(), srcType, declaringClass);
     return new WildcardTypeImpl(lowerBounds, upperBounds);
   }
