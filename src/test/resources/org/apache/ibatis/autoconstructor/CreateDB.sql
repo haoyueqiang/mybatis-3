@@ -30,6 +30,11 @@ CREATE TABLE subject (
   dt     TIMESTAMP
 );
 
+INSERT INTO subject VALUES
+                        (1, 'a', 10, 100, 45, 1, CURRENT_TIMESTAMP),
+                        (2, 'b', 10, NULL, 45, 1, CURRENT_TIMESTAMP),
+                        (2, 'c', 10, NULL, NULL, 0, CURRENT_TIMESTAMP);
+
 CREATE TABLE extensive_subject (
   aByte      TINYINT,
   aShort     SMALLINT,
@@ -45,11 +50,6 @@ CREATE TABLE extensive_subject (
   aBlob      LONGVARBINARY,
   aTimestamp TIMESTAMP
 );
-
-INSERT INTO subject VALUES
-  (1, 'a', 10, 100, 45, 1, CURRENT_TIMESTAMP),
-  (2, 'b', 10, NULL, 45, 1, CURRENT_TIMESTAMP),
-  (2, 'c', 10, NULL, NULL, 0, CURRENT_TIMESTAMP);
 
 INSERT INTO extensive_subject
 VALUES

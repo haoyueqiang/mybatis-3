@@ -39,11 +39,25 @@ class AutoConstructorTest {
   @BeforeAll
   static void setUp() throws Exception {
     // create a SqlSessionFactory
+    // 创建 SqlSessionFactory 对象, 基于 mybatis-config.xml
+
+    // Resources.getResourceAsReader
+    // 这段代码通过指定路径加载 XML 文件，并返回一个 Reader 对象。它的作用是将配置文件内容以字符流的形式提供给后续处理步骤。
+    // 此时 reader 对象仅仅是文件内容的读取器。
+
+    // SqlSessionFactoryBuilder.build(reader)
+    // 这里是关键点。SqlSessionFactoryBuilder 的 build 方法会接收 reader，
+    // 然后利用 MyBatis 的 XML 解析器（例如基于 DOM 或 SAX 的解析器）将配置文件中的 XML 内容解析为 Java 对象。
+    // 具体包括解析数据库环境配置、映射文件配置等，并最终构建出 SqlSessionFactory。
+
+    // 总结：reader 只是一个载体，用于读取 XML 配置文件的内容，
+    // 它本身并不负责将 XML 转为 Java 对象。实际的 XML 解析和对象转换是在 SqlSessionFactoryBuilder.build() 中完成的。
     try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/autoconstructor/mybatis-config.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
     }
 
     // populate in-memory database
+    // 初始化数据到内存数据库，基于 CreateDB.sql SQL 文件。
     BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
         "org/apache/ibatis/autoconstructor/CreateDB.sql");
   }
