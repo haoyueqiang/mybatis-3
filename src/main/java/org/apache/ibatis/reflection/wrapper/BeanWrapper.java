@@ -31,15 +31,29 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
+  /**
+   * 普通对象
+   */
   private final Object object;
+
+  /**
+   * 类的元数据
+   */
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);
     this.object = object;
+    // 创建 MetaClass 对象
     this.metaClass = MetaClass.forClass(object.getClass(), metaObject.getReflectorFactory());
   }
 
+  /**
+   * 获得值
+   *
+   * @param prop PropertyTokenizer 对象，相当于键
+   * @return 值
+   */
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.hasNext()) {
@@ -51,6 +65,12 @@ public class BeanWrapper extends BaseWrapper {
     }
   }
 
+  /**
+   * 设置指定属性的值
+   *
+   * @param prop  PropertyTokenizer 对象，相当于键
+   * @param value 值
+   */
   @Override
   public void set(PropertyTokenizer prop, Object value) {
     if (prop.hasNext()) {
@@ -90,8 +110,14 @@ public class BeanWrapper extends BaseWrapper {
     return metaValue.getSetterType(prop.getChildren());
   }
 
+  /**
+   * 获得指定属性的 getting 方法的返回值
+   * @param name
+   * @return
+   */
   @Override
   public Class<?> getGetterType(String name) {
+    // 创建 PropertyTokenizer 对象，对 name 进行分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (!prop.hasNext()) {
       return metaClass.getGetterType(name);
@@ -135,9 +161,11 @@ public class BeanWrapper extends BaseWrapper {
     return false;
   }
 
+  //创建指定属性的值
   @Override
   public MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory) {
     MetaObject metaValue;
+    // 获得 setting 方法的方法参数类型
     Class<?> type = getSetterType(prop.getName());
     try {
       Object newObject = objectFactory.create(type);

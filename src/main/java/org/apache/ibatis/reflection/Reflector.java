@@ -66,8 +66,11 @@ public class Reflector {
   private final Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
   public Reflector(Class<?> clazz) {
+    // 设置对应类
     type = clazz;
+    // 1. 初始化
     addDefaultConstructor(clazz);
+    // <2> // 初始化 getMethods 和 getTypes ，通过遍历 getting 方法
     Method[] classMethods = getClassMethods(clazz);
     if (isRecord(type)) {
       addRecordGetMethods(classMethods);
@@ -76,6 +79,7 @@ public class Reflector {
       addSetMethods(classMethods);
       addFields(clazz);
     }
+    // <5> 初始化 readablePropertyNames、writeablePropertyNames、caseInsensitivePropertyMap 属性
     readablePropertyNames = getMethods.keySet().toArray(new String[0]);
     writablePropertyNames = setMethods.keySet().toArray(new String[0]);
     for (String propName : readablePropertyNames) {
@@ -91,16 +95,23 @@ public class Reflector {
         .forEach(m -> addGetMethod(m.getName(), m, false));
   }
 
+  //查找默认无参构造方法
   private void addDefaultConstructor(Class<?> clazz) {
+    // 获得所有构造方法
     Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-    Arrays.stream(constructors).filter(constructor -> constructor.getParameterTypes().length == 0).findAny()
+    // constructor.getParameterTypes().length == 0 默认查找无参构造方法
+    Arrays.stream(constructors)
+      .filter(constructor -> constructor.getParameterTypes().length == 0).findAny()
         .ifPresent(constructor -> this.defaultConstructor = constructor);
   }
 
   private void addGetMethods(Method[] methods) {
+    // <1> 属性与其 getting 方法的映射。
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
-    Arrays.stream(methods).filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
-        .forEach(m -> addMethodConflict(conflictingGetters, PropertyNamer.methodToProperty(m.getName()), m));
+    Arrays.stream(methods)
+      .filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
+      .forEach(m -> addMethodConflict(conflictingGetters, PropertyNamer.methodToProperty(m.getName()), m));
+    // <4> 解决 getting 冲突方法
     resolveGetterConflicts(conflictingGetters);
   }
 
@@ -216,19 +227,25 @@ public class Reflector {
 
   private Class<?> typeToClass(Type src) {
     Class<?> result = null;
+    // 普通类型直接使用类
     if (src instanceof Class) {
       result = (Class<?>) src;
-    } else if (src instanceof ParameterizedType) {
+    }
+    // 泛型类型，使用泛型
+    else if (src instanceof ParameterizedType) {
       result = (Class<?>) ((ParameterizedType) src).getRawType();
-    } else if (src instanceof GenericArrayType) {
+    }
+    // 泛型数组，获取具体类
+    else if (src instanceof GenericArrayType) {
       Type componentType = ((GenericArrayType) src).getGenericComponentType();
-      if (componentType instanceof Class) {
+      if (componentType instanceof Class) { //普通类型
         result = Array.newInstance((Class<?>) componentType, 0).getClass();
       } else {
-        Class<?> componentClass = typeToClass(componentType);
+        Class<?> componentClass = typeToClass(componentType); // 递归该方法，返回类
         result = Array.newInstance(componentClass, 0).getClass();
       }
     }
+    // 都不符合 使用 Object类
     if (result == null) {
       result = Object.class;
     }
@@ -339,6 +356,7 @@ public class Reflector {
    *
    * @since 3.5.0
    */
+  @SuppressWarnings("removal")
   public static boolean canControlMemberAccessible() {
     try {
       SecurityManager securityManager = System.getSecurityManager();

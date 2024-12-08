@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * org.apache.ibatis.reflection.invoker.MethodInvoker ，实现 Invoker 接口，指定方法的调用器。代码如下：
  * @author Clinton Begin
  */
 public class MethodInvoker implements Invoker {
@@ -51,6 +52,9 @@ public class MethodInvoker implements Invoker {
     }
   }
 
+  /**
+   * @return 返回属性类型
+   */
   @Override
   public Class<?> getType() {
     return type;

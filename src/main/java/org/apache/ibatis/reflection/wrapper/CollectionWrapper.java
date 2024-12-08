@@ -24,6 +24,8 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
+ *
+ * org.apache.ibatis.reflection.wrapper.CollectionWrapper ，实现 ObjectWrapper 接口，集合 ObjectWrapper 实现类。比较简单，直接看代码：
  */
 public class CollectionWrapper implements ObjectWrapper {
 

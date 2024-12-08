@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * org.apache.ibatis.reflection.invoker.SetFieldInvoker ，实现 Invoker 接口，设置 Field 调用者。代码如下：
  * @author Clinton Begin
  */
 public class SetFieldInvoker implements Invoker {
@@ -43,6 +44,9 @@ public class SetFieldInvoker implements Invoker {
     return null;
   }
 
+  /**
+   * @return 返回属性类型
+   */
   @Override
   public Class<?> getType() {
     return field.getType();
