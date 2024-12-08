@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,8 +34,7 @@ class HeavyInitialLoadTest {
 
   @BeforeAll
   static void initSqlSessionFactory() throws Exception {
-    try (Reader reader = Resources
-        .getResourceAsReader("org/apache/ibatis/submitted/heavy_initial_load/ibatisConfig.xml")) {
+    try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/heavy_initial_load/ibatisConfig.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
     }
 
@@ -45,16 +44,18 @@ class HeavyInitialLoadTest {
   private static final int THREAD_COUNT = 5;
 
   /**
-   * Test to demonstrate the effect of the https://issues.apache.org/jira/browse/OGNL-121 issue in ognl on mybatis.
-   * <p>
-   * Use the thing mapper for the first time in multiple threads. The mapper contains a lot of ognl references to static
-   * final class members like:
-   * <p>
+   * Test to demonstrate the effect of the
+   * https://issues.apache.org/jira/browse/OGNL-121 issue in ognl on mybatis.
+   *
+   * Use the thing mapper for the first time in multiple threads. The mapper contains
+   * a lot of ognl references to static final class members like:
+   *
    * <code>@org.apache.ibatis.submitted.heavy_initial_load.Code@_1.equals(code)</code>
-   * <p>
-   * Handling of these references is optimized in ognl (because they never change), but version 2.6.9 has a bug in
-   * caching the result . As a result the reference is translated to a 'null' value, which is used to invoke the
-   * 'equals' method on (hence the 'target is null for method equals' exception).
+   *
+   * Handling of these references is optimized in ognl (because they never change), but
+   * version 2.6.9 has a bug in caching the result . As a result the reference is
+   * translated to a 'null' value, which is used to invoke the 'equals' method on
+   * (hence the 'target is null for method equals' exception).
    */
   @Test
   void selectThingsConcurrently_mybatis_issue_224() throws Exception {
@@ -65,7 +66,7 @@ class HeavyInitialLoadTest {
       threads[i] = new Thread(() -> {
         try {
           selectThing();
-        } catch (Exception exception) {
+        } catch(Exception exception) {
           throwables.add(exception);
         }
       });

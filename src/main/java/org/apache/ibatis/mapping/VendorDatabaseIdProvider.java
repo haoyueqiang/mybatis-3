@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,21 +16,33 @@
 package org.apache.ibatis.mapping;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.builder.BuilderException;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
 
 /**
  * Vendor DatabaseId provider.
- * <p>
- * It returns database product name as a databaseId. If the user provides a properties it uses it to translate database
- * product name key="Microsoft SQL Server", value="ms" will return "ms". It can return null, if no database product name
- * or a properties was specified and no translation was found.
+ *
+ * It returns database product name as a databaseId.
+ * 它能够返回数据库的产品名称作为databaseId
+ *
+ * If the user provides a properties it uses it to translate database product name
+ * 如果用户设置了properties，那该类会使用properties来翻译数据库产品名
+ * key="Microsoft SQL Server", value="ms" will return "ms".
+ *
+ * It can return null, if no database product name or
+ * a properties was specified and no translation was found.
  *
  * @author Eduardo Macarron
+ *
+ * vendor：摊贩;小贩;卖主;卖方
+ * 返回数据库产品名
  */
 public class VendorDatabaseIdProvider implements DatabaseIdProvider {
 
@@ -43,9 +55,10 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
     }
     try {
       return getDatabaseName(dataSource);
-    } catch (SQLException e) {
-      throw new BuilderException("Error occurred when getting DB product name.", e);
+    } catch (Exception e) {
+      LogHolder.log.error("Could not get a databaseId from dataSource", e);
     }
+    return null;
   }
 
   @Override
@@ -53,19 +66,48 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
     this.properties = p;
   }
 
+  /**
+   * 获取当前的数据源类型的别名
+   * @param dataSource 数据源
+   * @return 数据源类型别名
+   * @throws SQLException
+   */
   private String getDatabaseName(DataSource dataSource) throws SQLException {
+    // 获取当前连接的数据库名
     String productName = getDatabaseProductName(dataSource);
-    if (properties == null || properties.isEmpty()) {
-      return productName;
+    // 如果设置有properties值，则根据将获取的数据库名称作为模糊的key,映射为对应的value
+    if (this.properties != null) {
+      for (Map.Entry<Object, Object> property : properties.entrySet()) {
+        if (productName.contains((String) property.getKey())) {
+          return (String) property.getValue();
+        }
+      }
+      // 没有找到对应映射
+      return null;
     }
-    return properties.entrySet().stream().filter(entry -> productName.contains((String) entry.getKey()))
-        .map(entry -> (String) entry.getValue()).findFirst().orElse(null);
+    return productName;
   }
 
+  // 从连接中获取当前数据库的产品名
   private String getDatabaseProductName(DataSource dataSource) throws SQLException {
-    try (Connection con = dataSource.getConnection()) {
-      return con.getMetaData().getDatabaseProductName();
+    Connection con = null;
+    try {
+      con = dataSource.getConnection();
+      DatabaseMetaData metaData = con.getMetaData();
+      return metaData.getDatabaseProductName();
+    } finally {
+      if (con != null) {
+        try {
+          con.close();
+        } catch (SQLException e) {
+          // ignored
+        }
+      }
     }
+  }
+
+  private static class LogHolder {
+    private static final Log log = LogFactory.getLog(VendorDatabaseIdProvider.class);
   }
 
 }

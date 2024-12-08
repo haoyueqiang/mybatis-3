@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,38 +28,26 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
- *
- * org.apache.ibatis.reflection.MetaClass ，
- * 类的元数据，基于 Reflector 和 PropertyTokenizer ，提供对指定类的各种骚操作。
  */
 public class MetaClass {
 
+  // 反射器工厂
   private final ReflectorFactory reflectorFactory;
+  // 反射器
   private final Reflector reflector;
 
-  /**
-   * #forClass(Class<?> type, ReflectorFactory reflectorFactory) 静态方法，创建指定类的 MetaClass 对象。代码如下
-   * @param type
-   * @param reflectorFactory
-   * @return
-   */
-  public static MetaClass forClass(Class<?> type, ReflectorFactory reflectorFactory) {
-    return new MetaClass(type, reflectorFactory);
-  }
-
-  /**
-   * 通过构造方法，我们可以看出，一个 MetaClass 对象，对应一个 Class 对象。
-   * @param type
-   * @param reflectorFactory
-   */
   private MetaClass(Class<?> type, ReflectorFactory reflectorFactory) {
     this.reflectorFactory = reflectorFactory;
     this.reflector = reflectorFactory.findForClass(type);
   }
 
+  public static MetaClass forClass(Class<?> type, ReflectorFactory reflectorFactory) {
+    return new MetaClass(type, reflectorFactory);
+  }
+
   public MetaClass metaClassForProperty(String name) {
-    Class<?> propType = reflector.getGetterType(name); // 获得属性的类
-    return MetaClass.forClass(propType, reflectorFactory);  // 创建 MetaClass 对象
+    Class<?> propType = reflector.getGetterType(name);
+    return MetaClass.forClass(propType, reflectorFactory);
   }
 
   public String findProperty(String name) {
@@ -68,11 +56,9 @@ public class MetaClass {
   }
 
   public String findProperty(String name, boolean useCamelCaseMapping) {
-    // <1> 下划线转驼峰
     if (useCamelCaseMapping) {
       name = name.replace("_", "");
     }
-    // <2> 获得属性
     return findProperty(name);
   }
 
@@ -89,8 +75,9 @@ public class MetaClass {
     if (prop.hasNext()) {
       MetaClass metaProp = metaClassForProperty(prop.getName());
       return metaProp.getSetterType(prop.getChildren());
+    } else {
+      return reflector.getSetterType(prop.getName());
     }
-    return reflector.getSetterType(prop.getName());
   }
 
   public Class<?> getGetterType(String name) {
@@ -131,49 +118,47 @@ public class MetaClass {
     try {
       Invoker invoker = reflector.getGetInvoker(propertyName);
       if (invoker instanceof MethodInvoker) {
-        Field declaredMethod = MethodInvoker.class.getDeclaredField("method");
-        declaredMethod.setAccessible(true);
-        Method method = (Method) declaredMethod.get(invoker);
+        Field _method = MethodInvoker.class.getDeclaredField("method");
+        _method.setAccessible(true);
+        Method method = (Method) _method.get(invoker);
         return TypeParameterResolver.resolveReturnType(method, reflector.getType());
-      }
-      if (invoker instanceof GetFieldInvoker) {
-        Field declaredField = GetFieldInvoker.class.getDeclaredField("field");
-        declaredField.setAccessible(true);
-        Field field = (Field) declaredField.get(invoker);
+      } else if (invoker instanceof GetFieldInvoker) {
+        Field _field = GetFieldInvoker.class.getDeclaredField("field");
+        _field.setAccessible(true);
+        Field field = (Field) _field.get(invoker);
         return TypeParameterResolver.resolveFieldType(field, reflector.getType());
       }
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      // Ignored
+    } catch (NoSuchFieldException | IllegalAccessException ignored) {
     }
     return null;
   }
 
-  //判断指定属性是否有 setter 方法
-
   public boolean hasSetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      if (reflector.hasSetter(prop.getName())) {
+        MetaClass metaProp = metaClassForProperty(prop.getName());
+        return metaProp.hasSetter(prop.getChildren());
+      } else {
+        return false;
+      }
+    } else {
       return reflector.hasSetter(prop.getName());
     }
-    if (reflector.hasSetter(prop.getName())) {
-      MetaClass metaProp = metaClassForProperty(prop.getName());
-      return metaProp.hasSetter(prop.getChildren());
-    }
-    return false;
   }
 
-  //判断指定属性是否有 getting 方法
   public boolean hasGetter(String name) {
-    // 创建 PropertyTokenizer 对象, 对 name 进行分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      if (reflector.hasGetter(prop.getName())) {
+        MetaClass metaProp = metaClassForProperty(prop);
+        return metaProp.hasGetter(prop.getChildren());
+      } else {
+        return false;
+      }
+    } else {
       return reflector.hasGetter(prop.getName());
     }
-    if (reflector.hasGetter(prop.getName())) {
-      MetaClass metaProp = metaClassForProperty(prop);
-      return metaProp.hasGetter(prop.getChildren());
-    }
-    return false;
   }
 
   public Invoker getGetInvoker(String name) {

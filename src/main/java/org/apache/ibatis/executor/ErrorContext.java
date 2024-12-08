@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +17,20 @@ package org.apache.ibatis.executor;
 
 /**
  * @author Clinton Begin
+ *
+ * 错误上下文
  */
 public class ErrorContext {
+  // 获得当前操作系统的换行符
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator","\n");
 
-  private static final String LINE_SEPARATOR = System.lineSeparator();
-  private static final ThreadLocal<ErrorContext> LOCAL = ThreadLocal.withInitial(ErrorContext::new);
+  // 将自身存储进ThreadLocal，从而进行线程间的隔离
+  private static final ThreadLocal<ErrorContext> LOCAL = new ThreadLocal<>();
 
+  // 存储上一版本的自身，从而组成错误链
   private ErrorContext stored;
+
+  // 下面几条为错误的详细信息，可以写入一项或者多项
   private String resource;
   private String activity;
   private String object;
@@ -34,10 +41,23 @@ public class ErrorContext {
   private ErrorContext() {
   }
 
+  /**
+   * 从ThreadLocal取出已经实例化的ErrorContext，或者实例化一个ErrorContext放入ThreadLocal
+   * @return ErrorContext实例
+   */
   public static ErrorContext instance() {
-    return LOCAL.get();
+    ErrorContext context = LOCAL.get();
+    if (context == null) {
+      context = new ErrorContext();
+      LOCAL.set(context);
+    }
+    return context;
   }
 
+  /**
+   * 创建一个包装了原有ErrorContext的新ErrorContext
+   * @return 新的ErrorContext
+   */
   public ErrorContext store() {
     ErrorContext newContext = new ErrorContext();
     newContext.stored = this;
@@ -45,6 +65,10 @@ public class ErrorContext {
     return LOCAL.get();
   }
 
+  /**
+   * 剥离出当前ErrorContext的内部ErrorContext
+   * @return 剥离出的ErrorContext对象
+   */
   public ErrorContext recall() {
     if (stored != null) {
       LOCAL.set(stored);
@@ -126,7 +150,7 @@ public class ErrorContext {
       description.append(activity);
     }
 
-    // sql
+    // activity
     if (sql != null) {
       description.append(LINE_SEPARATOR);
       description.append("### SQL: ");

@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,8 +21,7 @@ import org.apache.ibatis.reflection.ReflectionException;
 
 /**
  * @author Clinton Begin
- *
- * org.apache.ibatis.reflection.property.PropertyNamer ，属性名相关的工具类方法。代码如下：
+ * 属性（包括属性方法）名称处理器
  */
 public final class PropertyNamer {
 
@@ -30,62 +29,33 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
-  /**
-   * 根据方法名，获得对应的属性名
-   *
-   * @param name 方法名
-   * @return 属性名
-   */
+  // 将方法名转化为属性名
   public static String methodToProperty(String name) {
-    // is 方法
     if (name.startsWith("is")) {
       name = name.substring(2);
-    }
-    // get 或者 set 方法
-    else if (name.startsWith("get") || name.startsWith("set")) {
+    } else if (name.startsWith("get") || name.startsWith("set")) {
       name = name.substring(3);
-    }
-    // 抛出 ReflectionException 异常，因为只能处理 is、set、get 方法
-    else {
-      throw new ReflectionException(
-          "Error parsing property name '" + name + "'.  Didn't start with 'is', 'get' or 'set'.");
+    } else {
+      throw new ReflectionException("Error parsing property name '" + name + "'.  Didn't start with 'is', 'get' or 'set'.");
     }
 
-    // 首字母小写
-    if (name.length() == 1 || name.length() > 1 && !Character.isUpperCase(name.charAt(1))) {
+    // 将方法名中属性的大小写修改正确
+    if (name.length() == 1 || (name.length() > 1 && !Character.isUpperCase(name.charAt(1)))) {
       name = name.substring(0, 1).toLowerCase(Locale.ENGLISH) + name.substring(1);
     }
 
     return name;
   }
 
-  /**
-   * 判断是否为 is、get、set 方法
-   *
-   * @param name 方法名
-   * @return 是否
-   */
+  // 判断方法是不是getter或者setter
   public static boolean isProperty(String name) {
     return isGetter(name) || isSetter(name);
   }
 
-  /**
-   * 判断是否为 get、is 方法
-   *
-   * @param name 方法名
-   * @return 是否
-   */
   public static boolean isGetter(String name) {
-    // 以 get 和 is 方法名开头，说明是 getting 方法
-    return name.startsWith("get") && name.length() > 3 || name.startsWith("is") && name.length() > 2;
+    return (name.startsWith("get") && name.length() > 3) || (name.startsWith("is") && name.length() > 2);
   }
 
-  /**
-   * 判断是否为 set 方法
-   *
-   * @param name 方法名
-   * @return 是否
-   */
   public static boolean isSetter(String name) {
     return name.startsWith("set") && name.length() > 3;
   }

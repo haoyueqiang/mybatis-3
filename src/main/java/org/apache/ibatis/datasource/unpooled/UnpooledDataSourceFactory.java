@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,20 +34,32 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
 
   protected DataSource dataSource;
 
+  /**
+   * UnpooledDataSourceFactory的构造方法，包含了创建数据源的操作
+   */
   public UnpooledDataSourceFactory() {
     this.dataSource = new UnpooledDataSource();
   }
 
+  /**
+   * 为数据源设置配置信息
+   * @param properties 配置信息
+   */
   @Override
   public void setProperties(Properties properties) {
+    // 驱动的属性
     Properties driverProperties = new Properties();
+    // 生成一个包含DataSource对象的元对象
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
+    // 设置属性
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
-      if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) {
+      if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) { // 取出以"driver."开头的配置信息
+        // 记录以"driver."开头的配置信息
         String value = properties.getProperty(propertyName);
         driverProperties.setProperty(propertyName.substring(DRIVER_PROPERTY_PREFIX_LENGTH), value);
       } else if (metaDataSource.hasSetter(propertyName)) {
+        // 通过反射为DataSource设置其他的属性
         String value = (String) properties.get(propertyName);
         Object convertedValue = convertValue(metaDataSource, propertyName, value);
         metaDataSource.setValue(propertyName, convertedValue);
@@ -56,6 +68,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
       }
     }
     if (driverProperties.size() > 0) {
+      // 将以"driver."开头的配置信息放入DataSource的driverProperties属性中
       metaDataSource.setValue("driverProperties", driverProperties);
     }
   }

@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,8 +43,13 @@ public class XMLIncludeTransformer {
     this.builderAssistant = builderAssistant;
   }
 
+  /**
+   * 解析数据库操作节点中的include节点
+   * @param source 数据库操作节点，即select、insert、update、delete这四类节点
+   */
   public void applyIncludes(Node source) {
     Properties variablesContext = new Properties();
+    // 读取全局属性信息
     Properties configurationVariables = configuration.getVariables();
     Optional.ofNullable(configurationVariables).ifPresent(variablesContext::putAll);
     applyIncludes(source, variablesContext, false);
@@ -52,41 +57,48 @@ public class XMLIncludeTransformer {
 
   /**
    * Recursively apply includes through all SQL fragments.
-   *
-   * @param source
-   *          Include node in DOM tree
-   * @param variablesContext
-   *          Current context for static variables with values
+   * @param source Include node in DOM tree
+   * @param variablesContext Current context for static variables with values
+   */
+  /**
+   * 解析数据库操作节点中的include节点
+   * @param source 数据库操作节点或其子节点
+   * @param variablesContext 全局属性信息
+   * @param included 是否嵌套
    */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
-    if ("include".equals(source.getNodeName())) {
+    if (source.getNodeName().equals("include")) { // 当前节点是include节点
+      // 找出被应用的节点
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
+      // 递归处理被引用节点中的include节点
       applyIncludes(toInclude, toIncludeContext, true);
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
         toInclude = source.getOwnerDocument().importNode(toInclude, true);
       }
+      // 完成include节点的替换
       source.getParentNode().replaceChild(toInclude, source);
       while (toInclude.hasChildNodes()) {
         toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
       }
       toInclude.getParentNode().removeChild(toInclude);
-    } else if (source.getNodeType() == Node.ELEMENT_NODE) {
+    } else if (source.getNodeType() == Node.ELEMENT_NODE) { // 元素节点
       if (included && !variablesContext.isEmpty()) {
-        // replace variables in attribute values
+        // 用属性值替代变量
         NamedNodeMap attributes = source.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
           Node attr = attributes.item(i);
           attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
         }
       }
+      // 循环到下层节点递归处理下层的include节点
       NodeList children = source.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         applyIncludes(children.item(i), variablesContext, included);
       }
-    } else if (included && (source.getNodeType() == Node.TEXT_NODE || source.getNodeType() == Node.CDATA_SECTION_NODE)
-        && !variablesContext.isEmpty()) {
-      // replace variables in text node
+    } else if (included && source.getNodeType() == Node.TEXT_NODE
+        && !variablesContext.isEmpty()) { // 文本节点
+      // 用属性值替代变量
       source.setNodeValue(PropertyParser.parse(source.getNodeValue(), variablesContext));
     }
   }
@@ -108,12 +120,8 @@ public class XMLIncludeTransformer {
 
   /**
    * Read placeholders and their values from include node definition.
-   *
-   * @param node
-   *          Include node instance
-   * @param inheritedVariablesContext
-   *          Current context used for replace variables in new variables values
-   *
+   * @param node Include node instance
+   * @param inheritedVariablesContext Current context used for replace variables in new variables values
    * @return variables context from include instance (no inherited values)
    */
   private Properties getVariablesContext(Node node, Properties inheritedVariablesContext) {
@@ -135,10 +143,11 @@ public class XMLIncludeTransformer {
     }
     if (declaredProperties == null) {
       return inheritedVariablesContext;
+    } else {
+      Properties newProperties = new Properties();
+      newProperties.putAll(inheritedVariablesContext);
+      newProperties.putAll(declaredProperties);
+      return newProperties;
     }
-    Properties newProperties = new Properties();
-    newProperties.putAll(inheritedVariablesContext);
-    newProperties.putAll(declaredProperties);
-    return newProperties;
   }
 }

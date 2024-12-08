@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,20 +15,16 @@
  */
 package org.apache.ibatis.submitted.cache;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static com.googlecode.catchexception.apis.BDDCatchException.when;
-import static org.assertj.core.api.BDDAssertions.then;
-
 import java.io.Reader;
 import java.lang.reflect.Field;
 
 import org.apache.ibatis.BaseDataTest;
 import org.apache.ibatis.annotations.CacheNamespace;
-import org.apache.ibatis.annotations.CacheNamespaceRef;
 import org.apache.ibatis.annotations.Property;
-import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheException;
+import org.apache.ibatis.annotations.CacheNamespaceRef;
+import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -36,6 +32,9 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static com.googlecode.catchexception.apis.BDDCatchException.*;
+import static org.assertj.core.api.BDDAssertions.then;
 
 // issue #524
 class CacheTest {
@@ -51,11 +50,10 @@ class CacheTest {
 
     // populate in-memory database
     BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-        "org/apache/ibatis/submitted/cache/CreateDB.sql");
+            "org/apache/ibatis/submitted/cache/CreateDB.sql");
   }
 
-  // @formatter:off
-  /**
+  /*
    * Test Plan:
    *  1) SqlSession 1 executes "select * from A".
    *  2) SqlSession 1 closes.
@@ -65,7 +63,6 @@ class CacheTest {
    * Assert:
    *   Step 4 returns 1 row. (This case fails when caching is enabled.)
    */
-  // @formatter:on
   @Test
   void testplan1() {
     try (SqlSession sqlSession1 = sqlSessionFactory.openSession(false)) {
@@ -84,8 +81,7 @@ class CacheTest {
     }
   }
 
-  // @formatter:off
-  /**
+  /*
    * Test Plan:
    *  1) SqlSession 1 executes "select * from A".
    *  2) SqlSession 1 closes.
@@ -97,7 +93,6 @@ class CacheTest {
    * Assert:
    *   Step 6 returns 2 rows.
    */
-  // @formatter:on
   @Test
   void testplan2() {
     try (SqlSession sqlSession1 = sqlSessionFactory.openSession(false)) {
@@ -120,8 +115,7 @@ class CacheTest {
     }
   }
 
-  // @formatter:off
-  /**
+  /*
    * Test Plan with Autocommit on:
    *  1) SqlSession 1 executes "select * from A".
    *  2) SqlSession 1 closes.
@@ -133,13 +127,13 @@ class CacheTest {
    * Assert:
    *   Step 6 returns 1 row.
    */
-  // @formatter:on
   @Test
   void testplan3() {
     try (SqlSession sqlSession1 = sqlSessionFactory.openSession(true)) {
       PersonMapper pm = sqlSession1.getMapper(PersonMapper.class);
       Assertions.assertEquals(2, pm.findAll().size());
     }
+
 
     try (SqlSession sqlSession2 = sqlSessionFactory.openSession(true)) {
       PersonMapper pm = sqlSession2.getMapper(PersonMapper.class);
@@ -152,8 +146,7 @@ class CacheTest {
     }
   }
 
-  // @formatter:off
-  /**
+  /*-
    * Test case for #405
    *
    * Test Plan with Autocommit on:
@@ -167,7 +160,6 @@ class CacheTest {
    * Assert:
    *   Step 5 returns 3 row.
    */
-  // @formatter:on
   @Test
   void shouldInsertWithOptionsFlushesCache() {
     try (SqlSession sqlSession1 = sqlSessionFactory.openSession(true)) {
@@ -187,8 +179,7 @@ class CacheTest {
     }
   }
 
-  // @formatter:off
-  /**
+  /*-
    * Test Plan with Autocommit on:
    *  1) SqlSession 1 executes select to cache result
    *  2) SqlSession 1 closes.
@@ -203,7 +194,6 @@ class CacheTest {
    *   Step 5 returns 2 row.
    *   Step 7 returns 3 row.
    */
-  // @formatter:on
   @Test
   void shouldApplyFlushCacheOptions() {
     try (SqlSession sqlSession1 = sqlSessionFactory.openSession(true)) {
@@ -261,25 +251,6 @@ class CacheTest {
   }
 
   @Test
-  void shouldResultBeCachedAfterInsert() {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession(true)) {
-      PersonMapper pm = sqlSession.getMapper(PersonMapper.class);
-      // create
-      Person p = new Person(3, "hello", "world");
-      pm.create(p);
-      // select (result should be cached)
-      Assertions.assertEquals(3, pm.findAll().size());
-      // create without flush (cache unchanged)
-      Person p2 = new Person(4, "bonjour", "world");
-      pm.createWithoutFlushCache(p2);
-    }
-    try (SqlSession sqlSession = sqlSessionFactory.openSession(true)) {
-      PersonMapper pm = sqlSession.getMapper(PersonMapper.class);
-      Assertions.assertEquals(3, pm.findAll().size());
-    }
-  }
-
-  @Test
   void shouldApplyCustomCacheProperties() {
     CustomCache customCache = unwrap(sqlSessionFactory.getConfiguration().getCache(CustomCacheMapper.class.getName()));
     Assertions.assertEquals("bar", customCache.getStringValue());
@@ -301,28 +272,28 @@ class CacheTest {
 
   @Test
   void shouldErrorUnsupportedProperties() {
-    when(() -> sqlSessionFactory.getConfiguration().addMapper(CustomCacheUnsupportedPropertyMapper.class));
+    when(sqlSessionFactory.getConfiguration()).addMapper(CustomCacheUnsupportedPropertyMapper.class);
     then(caughtException()).isInstanceOf(CacheException.class)
-        .hasMessage("Unsupported property type for cache: 'date' of type class java.util.Date");
+      .hasMessage("Unsupported property type for cache: 'date' of type class java.util.Date");
   }
 
   @Test
   void shouldErrorInvalidCacheNamespaceRefAttributesSpecifyBoth() {
-    when(() -> sqlSessionFactory.getConfiguration().getMapperRegistry()
-        .addMapper(InvalidCacheNamespaceRefBothMapper.class));
+    when(sqlSessionFactory.getConfiguration().getMapperRegistry())
+      .addMapper(InvalidCacheNamespaceRefBothMapper.class);
     then(caughtException()).isInstanceOf(BuilderException.class)
-        .hasMessage("Cannot use both value() and name() attribute in the @CacheNamespaceRef");
+      .hasMessage("Cannot use both value() and name() attribute in the @CacheNamespaceRef");
   }
 
   @Test
   void shouldErrorInvalidCacheNamespaceRefAttributesIsEmpty() {
-    when(() -> sqlSessionFactory.getConfiguration().getMapperRegistry()
-        .addMapper(InvalidCacheNamespaceRefEmptyMapper.class));
+    when(sqlSessionFactory.getConfiguration().getMapperRegistry())
+      .addMapper(InvalidCacheNamespaceRefEmptyMapper.class);
     then(caughtException()).isInstanceOf(BuilderException.class)
-        .hasMessage("Should be specified either value() or name() attribute in the @CacheNamespaceRef");
+      .hasMessage("Should be specified either value() or name() attribute in the @CacheNamespaceRef");
   }
 
-  private CustomCache unwrap(Cache cache) {
+  private CustomCache unwrap(Cache cache){
     Field field;
     try {
       field = cache.getClass().getDeclaredField("delegate");
@@ -331,7 +302,7 @@ class CacheTest {
     }
     try {
       field.setAccessible(true);
-      return (CustomCache) field.get(cache);
+      return (CustomCache)field.get(cache);
     } catch (IllegalAccessException e) {
       throw new IllegalStateException(e);
     } finally {
@@ -339,11 +310,9 @@ class CacheTest {
     }
   }
 
-  // @formatter:off
   @CacheNamespace(implementation = CustomCache.class, properties = {
       @Property(name = "date", value = "2016/11/21")
-    })
-  // @formatter:on
+  })
   private interface CustomCacheUnsupportedPropertyMapper {
   }
 

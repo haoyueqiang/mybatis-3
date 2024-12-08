@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,6 @@ import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.ibatis.binding.MapperProxy.MapperMethodInvoker;
 import org.apache.ibatis.session.SqlSession;
 
 /**
@@ -28,9 +27,14 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperProxyFactory<T> {
 
+  // 对应SQL的java接口类
   private final Class<T> mapperInterface;
-  private final Map<Method, MapperMethodInvoker> methodCache = new ConcurrentHashMap<>();
+  private final Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<>();
 
+  /**
+   * MapperProxyFactory构造方法
+   * @param mapperInterface 映射接口
+   */
   public MapperProxyFactory(Class<T> mapperInterface) {
     this.mapperInterface = mapperInterface;
   }
@@ -39,12 +43,14 @@ public class MapperProxyFactory<T> {
     return mapperInterface;
   }
 
-  public Map<Method, MapperMethodInvoker> getMethodCache() {
+  public Map<Method, MapperMethod> getMethodCache() {
     return methodCache;
   }
 
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
+    // 三个参数分别是：
+    // 创建代理对象的类加载器、要代理的接口、代理类的处理器（即具体的实现）。
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
   }
 

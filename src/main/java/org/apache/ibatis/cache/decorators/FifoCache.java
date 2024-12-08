@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,11 @@ import org.apache.ibatis.cache.Cache;
  */
 public class FifoCache implements Cache {
 
+  // 被装饰对象
   private final Cache delegate;
+  // 按照写入顺序保存了缓存数据的键
   private final Deque<Object> keyList;
+  // 缓存空间的大小
   private int size;
 
   public FifoCache(Cache delegate) {
@@ -51,6 +54,11 @@ public class FifoCache implements Cache {
     this.size = size;
   }
 
+  /**
+   * 向缓存写入一条数据
+   * @param key 数据的键
+   * @param value 数据的值
+   */
   @Override
   public void putObject(Object key, Object value) {
     cycleKeyList(key);
@@ -64,7 +72,6 @@ public class FifoCache implements Cache {
 
   @Override
   public Object removeObject(Object key) {
-    keyList.remove(key);
     return delegate.removeObject(key);
   }
 
@@ -74,6 +81,10 @@ public class FifoCache implements Cache {
     keyList.clear();
   }
 
+  /**
+   * 记录当前放入的数据的键，同时根据空间设置清除超出的数据
+   * @param key 当前放入的数据的键
+   */
   private void cycleKeyList(Object key) {
     keyList.addLast(key);
     if (keyList.size() > size) {

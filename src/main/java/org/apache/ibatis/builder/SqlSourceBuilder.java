@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,6 @@ package org.apache.ibatis.builder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlSource;
@@ -31,50 +30,52 @@ import org.apache.ibatis.type.JdbcType;
 
 /**
  * @author Clinton Begin
+ *
+ * SqlSource的解析器
+ *
  */
 public class SqlSourceBuilder extends BaseBuilder {
 
+  // 能够处理的占位符属性
   private static final String PARAMETER_PROPERTIES = "javaType,jdbcType,mode,numericScale,resultMap,typeHandler,jdbcTypeName";
 
   public SqlSourceBuilder(Configuration configuration) {
     super(configuration);
   }
 
+
+  // 这里解析的对象是SqlNode拼接结束的，即<if> <where>等节点的结果都已经解析结束。然后在这里继续处理
+
+  /**
+   * 将DynamicSqlSource和RawSqlSource中的“#{}”符号替换掉，从而将他们转化为StaticSqlSource
+   * @param originalSql sqlNode.apply()拼接之后的sql语句。已经不包含<if> <where>等节点，也不含有${}符号
+   * @param parameterType 实参类型
+   * @param additionalParameters 附加参数
+   * @return 解析结束的StaticSqlSource
+   */
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
-    ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType,
-        additionalParameters);
+    // 用来完成#{}处理的处理器
+    ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType, additionalParameters);
+    // 通用的占位符解析器，用来进行占位符替换
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
-    String sql;
-    if (configuration.isShrinkWhitespacesInSql()) {
-      sql = parser.parse(removeExtraWhitespaces(originalSql));
-    } else {
-      sql = parser.parse(originalSql);
-    }
+    // 将#{}替换为?的SQL语句
+    String sql = parser.parse(originalSql);
+    // 生成新的StaticSqlSource对象
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
-  public static String removeExtraWhitespaces(String original) {
-    StringTokenizer tokenizer = new StringTokenizer(original);
-    StringBuilder builder = new StringBuilder();
-    boolean hasMoreTokens = tokenizer.hasMoreTokens();
-    while (hasMoreTokens) {
-      builder.append(tokenizer.nextToken());
-      hasMoreTokens = tokenizer.hasMoreTokens();
-      if (hasMoreTokens) {
-        builder.append(' ');
-      }
-    }
-    return builder.toString();
-  }
-
+  // 用以替换占位符的处理器
+  // 用来处理形如#｛ id, javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler ｝
   private static class ParameterMappingTokenHandler extends BaseBuilder implements TokenHandler {
 
-    private final List<ParameterMapping> parameterMappings = new ArrayList<>();
-    private final Class<?> parameterType;
-    private final MetaObject metaParameters;
+    // 每个#{}中的东西对应一个ParameterMapping。所有的#{}都放在这个list
+    private List<ParameterMapping> parameterMappings = new ArrayList<>();
+    // 参数类型
+    private Class<?> parameterType;
+    // 参数的Meta对象
+    private MetaObject metaParameters;
 
-    public ParameterMappingTokenHandler(Configuration configuration, Class<?> parameterType,
-        Map<String, Object> additionalParameters) {
+    public ParameterMappingTokenHandler(Configuration configuration, Class<?> parameterType, Map<String, Object> additionalParameters) {
       super(configuration);
       this.parameterType = parameterType;
       this.metaParameters = configuration.newMetaObject(additionalParameters);
@@ -84,13 +85,25 @@ public class SqlSourceBuilder extends BaseBuilder {
       return parameterMappings;
     }
 
+    /**
+     * 在这里，${}被替换为？
+     * 但同时，用户传入的实际参数也被记录了
+     * @param content 包含
+     * @return
+     */
     @Override
     public String handleToken(String content) {
       parameterMappings.add(buildParameterMapping(content));
       return "?";
     }
 
+    /**
+     *
+     * @param content 形如id, javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler
+     * @return
+     */
     private ParameterMapping buildParameterMapping(String content) {
+      // 将参数转化为map
       Map<String, String> propertiesMap = parseParameterMapping(content);
       String property = propertiesMap.get("property");
       Class<?> propertyType;
@@ -136,8 +149,7 @@ public class SqlSourceBuilder extends BaseBuilder {
         } else if ("expression".equals(name)) {
           throw new BuilderException("Expression based parameters are not supported yet");
         } else {
-          throw new BuilderException("An invalid property '" + name + "' was found in mapping #{" + content
-              + "}.  Valid properties are " + PARAMETER_PROPERTIES);
+          throw new BuilderException("An invalid property '" + name + "' was found in mapping #{" + content + "}.  Valid properties are " + PARAMETER_PROPERTIES);
         }
       }
       if (typeHandlerAlias != null) {
@@ -148,12 +160,12 @@ public class SqlSourceBuilder extends BaseBuilder {
 
     private Map<String, String> parseParameterMapping(String content) {
       try {
+        // content = id, javaType= int, jdbcType=NUMERIC, typeHandler=DemoTypeHandler ;
         return new ParameterExpression(content);
       } catch (BuilderException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new BuilderException("Parsing error was found in mapping #{" + content
-            + "}.  Check syntax #{property|(expression), var1=value1, var2=value2, ...} ", ex);
+        throw new BuilderException("Parsing error was found in mapping #{" + content + "}.  Check syntax #{property|(expression), var1=value1, var2=value2, ...} ", ex);
       }
     }
   }

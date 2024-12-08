@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,40 +42,25 @@ import org.xml.sax.SAXParseException;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ * 解析XML的解析器
  */
 public class XPathParser {
 
-  /**
-   * Xml Document 对象
-   * document 对象， XML 被解析后, 生成 org.w3c.dom.Document对象
-   */
+  // 代表要解析的整个XML文档
   private final Document document;
-
-  /**
-   * 是否校验xml,一般情况下 value= true
-   */
+  // 是否开启验证
   private boolean validation;
-
-  /**
-   * XML 实体解析器
-   * org.xml.sax.EntityResolver 对象， XML 实体解析器
-   */
+  // EntityResolver，通过它可以声明寻找DTD文件的方法，例如通过本地寻找，而不是只能通过网络下载dtd文件
   private EntityResolver entityResolver;
-
-  /**
-   * 变量 Properties 对象
-   * 用来替换需要动态配置的值
-   */
+  // MyBatis配置文件中的properties信息
   private Properties variables;
-
-  /**
-   * Java XPath 对象
-   * 用于查询 XML 中的节点和元素。
-   */
+  // javax.xml.xpath.XPath工具
   private XPath xpath;
 
   public XPathParser(String xml) {
+    // 初始化属性
     commonConstructor(false, null, null);
+    // 从输入中获取整个xml文档
     this.document = createDocument(new InputSource(new StringReader(xml)));
   }
 
@@ -135,18 +119,8 @@ public class XPathParser {
     this.document = document;
   }
 
-  /**
-   * 构造 XPathParser 对象
-   * @param xml XML文件地址
-   * @param validation 是否校验XML
-   * @param variables 变量Properties对象
-   * @param entityResolver XML的实体解析器
-   */
   public XPathParser(String xml, boolean validation, Properties variables, EntityResolver entityResolver) {
-    // 公用的构造方法逻辑
     commonConstructor(validation, variables, entityResolver);
-
-    // createDocument 将 XML 文件解析成  Document对象
     this.document = createDocument(new InputSource(new StringReader(xml)));
   }
 
@@ -173,11 +147,18 @@ public class XPathParser {
     return evalString(document, expression);
   }
 
+  /**
+   * 解析XML文件中的字符串
+   * @param root 解析根
+   * @param expression 解析的语句
+   * @return 解析出的字符串
+   */
   public String evalString(Object root, String expression) {
-    // 1。获得值
+    // 解析出字符串结果
     String result = (String) evaluate(expression, root, XPathConstants.STRING);
-    // 2. 基于 variables 替换动态值 ， 如果 result 为动态值
-    return PropertyParser.parse(result, variables);
+    // 对字符串中的属性进行处理
+    result = PropertyParser.parse(result, variables);
+    return result;
   }
 
   public Boolean evalBoolean(String expression) {
@@ -228,21 +209,13 @@ public class XPathParser {
     return (Double) evaluate(expression, root, XPathConstants.NUMBER);
   }
 
-
-  /**
-   *
-   * @param expression Node 数组
-   * @return
-   */
   public List<XNode> evalNodes(String expression) {
     return evalNodes(document, expression);
   }
 
-  public List<XNode> evalNodes(Object root, String expression) { // Node 数组
+  public List<XNode> evalNodes(Object root, String expression) {
     List<XNode> xnodes = new ArrayList<>();
-    // 1. 获得 Node 数组
     NodeList nodes = (NodeList) evaluate(expression, root, XPathConstants.NODESET);
-    // 2. 封装成 XNode 数组
     for (int i = 0; i < nodes.getLength(); i++) {
       xnodes.add(new XNode(this, nodes.item(i), variables));
     }
@@ -262,44 +235,38 @@ public class XPathParser {
   }
 
   /**
-   * 获取指定元素或节点的值
-   * @param expression 表达式
-   * @param root 指定节点
-   * @param returnType 返回类型
-   * @return 值
+   * 进行XML节点的解析
+   * @param expression 解析的语句
+   * @param root 解析根
+   * @param returnType 返回值类型
+   * @return 解析结果
    */
   private Object evaluate(String expression, Object root, QName returnType) {
     try {
-      // 调用 xpath.evaluate 方法获取指定元素
+      // 对指定节点root运行解析语法expression，获得returnType类型的解析结果
       return xpath.evaluate(expression, root, returnType);
     } catch (Exception e) {
       throw new BuilderException("Error evaluating XPath.  Cause: " + e, e);
     }
   }
 
-  /**
-   * createDocument 将 XML 文件解析成  Document对象
-   * @param inputSource
-   * @return
-   */
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
-      // 1> 创建 DocumentBuilderFactory 对象
+      // DOM文档创建器的工厂
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      factory.setValidating(validation); // 否校验xml,一般情况下 value= true
+      factory.setValidating(validation);
 
       factory.setNamespaceAware(false);
       factory.setIgnoringComments(true);
       factory.setIgnoringElementContentWhitespace(false);
       factory.setCoalescing(false);
-      factory.setExpandEntityReferences(false);
+      factory.setExpandEntityReferences(true);
 
-      // 2> 创建 DocumentBuilder 对象
+      // DOM文档创建器
       DocumentBuilder builder = factory.newDocumentBuilder();
-      builder.setEntityResolver(entityResolver); // 设置 XML 实体解析器
-      builder.setErrorHandler(new ErrorHandler() { // 实现都空的
+      builder.setEntityResolver(entityResolver);
+      builder.setErrorHandler(new ErrorHandler() {
         @Override
         public void error(SAXParseException exception) throws SAXException {
           throw exception;
@@ -312,27 +279,18 @@ public class XPathParser {
 
         @Override
         public void warning(SAXParseException exception) throws SAXException {
-          // NOP
         }
       });
-      // 3> 解析 XML 文件
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);
     }
   }
 
-  /**
-   * 公用的构造方法逻辑
-   * @param validation 是否校验XML
-   * @param variables 变量Properties对象
-   * @param entityResolver XML的实体解析器
-   */
   private void commonConstructor(boolean validation, Properties variables, EntityResolver entityResolver) {
     this.validation = validation;
     this.entityResolver = entityResolver;
     this.variables = variables;
-    // 创建 XPathFactory 对象
     XPathFactory factory = XPathFactory.newInstance();
     this.xpath = factory.newXPath();
   }

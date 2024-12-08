@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,24 +34,27 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.result.DefaultMapResultHandler;
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
- * The default implementation for {@link SqlSession}. Note that this class is not Thread-Safe.
+ * The default implementation for {@link SqlSession}.
+ * Note that this class is not Thread-Safe.
  *
  * @author Clinton Begin
  */
 public class DefaultSqlSession implements SqlSession {
-
+  // 配置信息
   private final Configuration configuration;
+  // 执行器
   private final Executor executor;
-
+  // 是否自动提交
   private final boolean autoCommit;
+  // 缓存是否已经被污染
   private boolean dirty;
+  // 游标列表
   private List<Cursor<?>> cursorList;
 
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {
@@ -75,10 +79,8 @@ public class DefaultSqlSession implements SqlSession {
     List<T> list = this.selectList(statement, parameter);
     if (list.size() == 1) {
       return list.get(0);
-    }
-    if (list.size() > 1) {
-      throw new TooManyResultsException(
-          "Expected one result (or null) to be returned by selectOne(), but found: " + list.size());
+    } else if (list.size() > 1) {
+      throw new TooManyResultsException("Expected one result (or null) to be returned by selectOne(), but found: " + list.size());
     } else {
       return null;
     }
@@ -94,11 +96,12 @@ public class DefaultSqlSession implements SqlSession {
     return this.selectMap(statement, parameter, mapKey, RowBounds.DEFAULT);
   }
 
+  // 要想selectMap实际上先selectList
   @Override
   public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {
     final List<? extends V> list = selectList(statement, parameter, rowBounds);
     final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<>(mapKey,
-        configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
+            configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
     final DefaultResultContext<V> context = new DefaultResultContext<>();
     for (V o : list) {
       context.nextResultObject(o);
@@ -121,7 +124,6 @@ public class DefaultSqlSession implements SqlSession {
   public <T> Cursor<T> selectCursor(String statement, Object parameter, RowBounds rowBounds) {
     try {
       MappedStatement ms = configuration.getMappedStatement(statement);
-      dirty |= ms.isDirtySelect();
       Cursor<T> cursor = executor.queryCursor(ms, wrapCollection(parameter), rowBounds);
       registerCursor(cursor);
       return cursor;
@@ -142,16 +144,21 @@ public class DefaultSqlSession implements SqlSession {
     return this.selectList(statement, parameter, RowBounds.DEFAULT);
   }
 
+  /**
+   * 查询结果列表
+   * @param <E> 返回的列表元素的类型
+   * @param statement SQL语句
+   * @param parameter 参数对象
+   * @param rowBounds  翻页限制条件
+   * @return 结果对象列表
+   */
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
-    return selectList(statement, parameter, rowBounds, Executor.NO_RESULT_HANDLER);
-  }
-
-  private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     try {
+      // 获取查询语句
       MappedStatement ms = configuration.getMappedStatement(statement);
-      dirty |= ms.isDirtySelect();
-      return executor.query(ms, wrapCollection(parameter), rowBounds, handler);
+      // 交由执行器进行查询
+      return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
     } finally {
@@ -171,7 +178,14 @@ public class DefaultSqlSession implements SqlSession {
 
   @Override
   public void select(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
-    selectList(statement, parameter, rowBounds, handler);
+    try {
+      MappedStatement ms = configuration.getMappedStatement(statement);
+      executor.query(ms, wrapCollection(parameter), rowBounds, handler);
+    } catch (Exception e) {
+      throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
+    } finally {
+      ErrorContext.instance().reset();
+    }
   }
 
   @Override
@@ -269,7 +283,7 @@ public class DefaultSqlSession implements SqlSession {
   }
 
   private void closeCursors() {
-    if (cursorList != null && !cursorList.isEmpty()) {
+    if (cursorList != null && cursorList.size() != 0) {
       for (Cursor<?> cursor : cursorList) {
         try {
           cursor.close();
@@ -313,17 +327,25 @@ public class DefaultSqlSession implements SqlSession {
   }
 
   private boolean isCommitOrRollbackRequired(boolean force) {
-    return !autoCommit && dirty || force;
+    return (!autoCommit && dirty) || force;
   }
 
   private Object wrapCollection(final Object object) {
-    return ParamNameResolver.wrapToMapIfCollection(object, null);
+    if (object instanceof Collection) {
+      StrictMap<Object> map = new StrictMap<>();
+      map.put("collection", object);
+      if (object instanceof List) {
+        map.put("list", object);
+      }
+      return map;
+    } else if (object != null && object.getClass().isArray()) {
+      StrictMap<Object> map = new StrictMap<>();
+      map.put("array", object);
+      return map;
+    }
+    return object;
   }
 
-  /**
-   * @deprecated Since 3.5.5
-   */
-  @Deprecated
   public static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -5741767162221585340L;

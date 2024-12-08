@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@
  */
 package org.apache.ibatis.submitted.timezone_edge_case;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.Reader;
 import java.sql.Connection;
@@ -36,7 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class TimezoneEdgeCaseTest {
+public class TimezoneEdgeCaseTest {
 
   private static SqlSessionFactory sqlSessionFactory;
   private TimeZone timeZone;
@@ -63,8 +63,7 @@ class TimezoneEdgeCaseTest {
 
   @Test
   void shouldSelectNonExistentLocalTimestampAsIs() {
-    // Newer hsqldb requires we use a bogus timezone as timezone now works
-    TimeZone.setDefault(TimeZone.getTimeZone("Bad/Zone"));
+    TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       Mapper mapper = sqlSession.getMapper(Mapper.class);
       Record record = mapper.selectById(1);
@@ -74,8 +73,7 @@ class TimezoneEdgeCaseTest {
 
   @Test
   void shouldInsertNonExistentLocalTimestampAsIs() throws Exception {
-    // Newer hsqldb requires we use a bogus timezone as timezone now works
-    TimeZone.setDefault(TimeZone.getTimeZone("Bad/Zone"));
+    TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
     LocalDateTime localDateTime = LocalDateTime.of(LocalDate.of(2019, 3, 10), LocalTime.of(2, 30));
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       Mapper mapper = sqlSession.getMapper(Mapper.class);
@@ -85,7 +83,8 @@ class TimezoneEdgeCaseTest {
       mapper.insert(record);
       sqlSession.commit();
     }
-    try (SqlSession sqlSession = sqlSessionFactory.openSession(); Connection con = sqlSession.getConnection();
+    try (SqlSession sqlSession = sqlSessionFactory.openSession();
+        Connection con = sqlSession.getConnection();
         Statement stmt = con.createStatement();
         ResultSet rs = stmt.executeQuery("select count(*) from records where id = 2 and ts = '2019-03-10 02:30:00'")) {
       rs.next();
@@ -95,8 +94,7 @@ class TimezoneEdgeCaseTest {
 
   @Test
   void shouldSelectNonExistentLocalDateAsIs() {
-    // Newer hsqldb requires we use a bogus timezone as timezone now works
-    TimeZone.setDefault(TimeZone.getTimeZone("Bad/Zone"));
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Apia"));
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       Mapper mapper = sqlSession.getMapper(Mapper.class);
       Record record = mapper.selectById(1);
@@ -106,8 +104,7 @@ class TimezoneEdgeCaseTest {
 
   @Test
   void shouldInsertNonExistentLocalDateAsIs() throws Exception {
-    // Newer hsqldb requires we use a bogus timezone as timezone now works
-    TimeZone.setDefault(TimeZone.getTimeZone("Bad/Zone"));
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Apia"));
     LocalDate localDate = LocalDate.of(2011, 12, 30);
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       Mapper mapper = sqlSession.getMapper(Mapper.class);
@@ -117,7 +114,8 @@ class TimezoneEdgeCaseTest {
       mapper.insert(record);
       sqlSession.commit();
     }
-    try (SqlSession sqlSession = sqlSessionFactory.openSession(); Connection con = sqlSession.getConnection();
+    try (SqlSession sqlSession = sqlSessionFactory.openSession();
+        Connection con = sqlSession.getConnection();
         Statement stmt = con.createStatement();
         ResultSet rs = stmt.executeQuery("select count(*) from records where id = 3 and d = '2011-12-30'")) {
       rs.next();

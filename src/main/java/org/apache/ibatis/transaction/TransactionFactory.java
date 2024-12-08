@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,9 +31,12 @@ public interface TransactionFactory {
 
   /**
    * Sets transaction factory custom properties.
-   *
    * @param props
-   *          the new properties
+   */
+
+  /**
+   * 配置工厂的属性
+   * @param props 工厂的属性
    */
   default void setProperties(Properties props) {
     // NOP
@@ -41,29 +44,33 @@ public interface TransactionFactory {
 
   /**
    * Creates a {@link Transaction} out of an existing connection.
-   *
-   * @param conn
-   *          Existing database connection
-   *
+   * @param conn Existing database connection
    * @return Transaction
-   *
    * @since 3.1.0
+   */
+
+  /**
+   * 从给定的连接中获取一个事务
+   * @param conn 给定的连接
+   * @return 获取的事务对象
    */
   Transaction newTransaction(Connection conn);
 
   /**
    * Creates a {@link Transaction} out of a datasource.
-   *
-   * @param dataSource
-   *          DataSource to take the connection from
-   * @param level
-   *          Desired isolation level
-   * @param autoCommit
-   *          Desired autocommit
-   *
+   * @param dataSource DataSource to take the connection from
+   * @param level Desired isolation level
+   * @param autoCommit Desired autocommit
    * @return Transaction
-   *
    * @since 3.1.0
+   */
+
+  /**
+   * 从给定的数据源中获取事务，并对事务进行一些配置
+   * @param dataSource 数据源
+   * @param level 数据隔离级别
+   * @param autoCommit 是否自动提交事务
+   * @return 获取的事务对象
    */
   Transaction newTransaction(DataSource dataSource, TransactionIsolationLevel level, boolean autoCommit);
 

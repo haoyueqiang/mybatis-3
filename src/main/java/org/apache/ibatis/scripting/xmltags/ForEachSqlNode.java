@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,6 @@
 package org.apache.ibatis.scripting.xmltags;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.ibatis.parsing.GenericTokenParser;
 import org.apache.ibatis.session.Configuration;
@@ -27,35 +26,28 @@ import org.apache.ibatis.session.Configuration;
 public class ForEachSqlNode implements SqlNode {
   public static final String ITEM_PREFIX = "__frch_";
 
+  // 表达式求值器
   private final ExpressionEvaluator evaluator;
+  // collection属性的值
   private final String collectionExpression;
-  private final Boolean nullable;
+  // 节点内的内容
   private final SqlNode contents;
+  // open属性的值，即元素左侧插入的字符串
   private final String open;
+  // close属性的值，即元素右侧插入的字符串
   private final String close;
+  // separator属性的值，即元素分隔符
   private final String separator;
+  // item属性的值，即元素
   private final String item;
+  // index属性的值，即元素的编号
   private final String index;
+  // 配置信息
   private final Configuration configuration;
 
-  /**
-   * @deprecated Since 3.5.9, use the
-   *             {@link #ForEachSqlNode(Configuration, SqlNode, String, Boolean, String, String, String, String, String)}.
-   */
-  @Deprecated
-  public ForEachSqlNode(Configuration configuration, SqlNode contents, String collectionExpression, String index,
-      String item, String open, String close, String separator) {
-    this(configuration, contents, collectionExpression, null, index, item, open, close, separator);
-  }
-
-  /**
-   * @since 3.5.9
-   */
-  public ForEachSqlNode(Configuration configuration, SqlNode contents, String collectionExpression, Boolean nullable,
-      String index, String item, String open, String close, String separator) {
+  public ForEachSqlNode(Configuration configuration, SqlNode contents, String collectionExpression, String index, String item, String open, String close, String separator) {
     this.evaluator = new ExpressionEvaluator();
     this.collectionExpression = collectionExpression;
-    this.nullable = nullable;
     this.contents = contents;
     this.open = open;
     this.close = close;
@@ -65,35 +57,47 @@ public class ForEachSqlNode implements SqlNode {
     this.configuration = configuration;
   }
 
+  /**
+   * 完成该节点自身的解析
+   * @param context 上下文环境，节点自身的解析结果将合并到该上下文环境中
+   * @return 解析是否成功
+   */
   @Override
   public boolean apply(DynamicContext context) {
+    // 获取环境上下文信息
     Map<String, Object> bindings = context.getBindings();
-    final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings,
-        Optional.ofNullable(nullable).orElseGet(configuration::isNullableOnForEach));
-    if (iterable == null || !iterable.iterator().hasNext()) {
+    // 交给表达式求值器解析表达式，从而获得迭代器
+    final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);
+    if (!iterable.iterator().hasNext()) { // 没有可以迭代的元素
+      // 不需要拼接信息，直接返回
       return true;
     }
     boolean first = true;
+    // 添加open字符串
     applyOpen(context);
     int i = 0;
     for (Object o : iterable) {
       DynamicContext oldContext = context;
-      if (first || separator == null) {
+      if (first || separator == null) { // 第一个元素
+        // 添加元素
         context = new PrefixedContext(context, "");
       } else {
+        // 添加间隔符
         context = new PrefixedContext(context, separator);
       }
       int uniqueNumber = context.getUniqueNumber();
       // Issue #709
-      if (o instanceof Map.Entry) {
-        @SuppressWarnings("unchecked")
+      if (o instanceof Map.Entry) { // 被迭代对象是Map.Entry
+        // 将被迭代对象放入上下文环境中
         Map.Entry<Object, Object> mapEntry = (Map.Entry<Object, Object>) o;
         applyIndex(context, mapEntry.getKey(), uniqueNumber);
         applyItem(context, mapEntry.getValue(), uniqueNumber);
       } else {
+        // 将被迭代对象放入上下文环境中
         applyIndex(context, i, uniqueNumber);
         applyItem(context, o, uniqueNumber);
       }
+      // 根据上下文环境等信息构建内容
       contents.apply(new FilteredDynamicContext(configuration, context, index, item, uniqueNumber));
       if (first) {
         first = !((PrefixedContext) context).isPrefixApplied();
@@ -101,7 +105,9 @@ public class ForEachSqlNode implements SqlNode {
       context = oldContext;
       i++;
     }
+    // 添加close字符串
     applyClose(context);
+    // 清理此次操作对环境的影响
     context.getBindings().remove(item);
     context.getBindings().remove(index);
     return true;
@@ -143,8 +149,7 @@ public class ForEachSqlNode implements SqlNode {
     private final String itemIndex;
     private final String item;
 
-    public FilteredDynamicContext(Configuration configuration, DynamicContext delegate, String itemIndex, String item,
-        int i) {
+    public FilteredDynamicContext(Configuration configuration,DynamicContext delegate, String itemIndex, String item, int i) {
       super(configuration, null);
       this.delegate = delegate;
       this.index = i;
@@ -186,6 +191,7 @@ public class ForEachSqlNode implements SqlNode {
     }
 
   }
+
 
   private class PrefixedContext extends DynamicContext {
     private final DynamicContext delegate;

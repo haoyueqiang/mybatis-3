@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2016 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,13 +52,8 @@ public interface Mapper {
   Parent getCollection(Integer id);
 
   @ResultMap("twoCollectionsRM")
-  // @formatter:off
-  @Select({"select p.id, c.name child_name, e.name pet_name from parent p",
+  @Select({ "select p.id, c.name child_name, e.name pet_name from parent p",
       "left join child c on c.parent_id = p.id",
-      "left join pet e on e.parent_id = p.id", "where p.id = #{id}"})
-  // @formatter:on
+      "left join pet e on e.parent_id = p.id", "where p.id = #{id}" })
   Parent getTwoCollections(Integer id);
-
-  @Select("select col1, col2 from parent where id = #{id}")
-  ImmutableParent selectImmutable(Integer id);
 }

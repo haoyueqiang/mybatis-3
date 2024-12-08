@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2015 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +21,11 @@ package org.apache.ibatis.exceptions;
 @Deprecated
 public class IbatisException extends RuntimeException {
 
+  // 序列化标志。因为它是Throwable的子类，Throwable是可序列化的。
   private static final long serialVersionUID = 3880206998166270511L;
 
   public IbatisException() {
+    super();
   }
 
   public IbatisException(String message) {

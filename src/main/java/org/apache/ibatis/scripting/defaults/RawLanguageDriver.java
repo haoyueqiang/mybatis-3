@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,33 +22,40 @@ import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
- * As of 3.2.4 the default XML language is able to identify static statements and create a {@link RawSqlSource}. So
- * there is no need to use RAW unless you want to make sure that there is not any dynamic tag for any reason.
+ * As of 3.2.4 the default XML language is able to identify static statements
+ * and create a {@link RawSqlSource}. So there is no need to use RAW unless you
+ * want to make sure that there is not any dynamic tag for any reason.
  *
  * @since 3.2.0
- *
  * @author Eduardo Macarron
  */
 public class RawLanguageDriver extends XMLLanguageDriver {
 
   @Override
   public SqlSource createSqlSource(Configuration configuration, XNode script, Class<?> parameterType) {
+    // 调用父类方法完成操作
     SqlSource source = super.createSqlSource(configuration, script, parameterType);
+    // 校验得到的SqlSource是RawSqlSource
     checkIsNotDynamic(source);
     return source;
   }
 
   @Override
   public SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType) {
+    // 调用父类方法完成操作
     SqlSource source = super.createSqlSource(configuration, script, parameterType);
+    // 校验得到的SqlSource是RawSqlSource
     checkIsNotDynamic(source);
     return source;
   }
 
+  /**
+   * 校验输入的SqlSource是RawSqlSource，否则便抛出异常
+   * @param source 输入的SqlSource对象
+   */
   private void checkIsNotDynamic(SqlSource source) {
     if (!RawSqlSource.class.equals(source.getClass())) {
       throw new BuilderException("Dynamic content is not allowed when using RAW language");
     }
   }
-
 }

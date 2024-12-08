@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,20 +44,28 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * 建造一个SqlSessionFactory对象
+   * @param reader 读取字符流的抽象类
+   * @param environment 环境信息
+   * @param properties 配置信息
+   * @return SqlSessionFactory对象
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+      // 传入配置文件，创建一个XMLConfigBuilder类
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+      // 分两步：
+      // 1、解析配置文件，得到配置文件对应的Configuration对象
+      // 2、根据Configuration对象，获得一个DefaultSqlSessionFactory
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
     } finally {
       ErrorContext.instance().reset();
       try {
-        if (reader != null) {
-          reader.close();
-        }
+        reader.close();
       } catch (IOException e) {
-        // Intentionally ignore. Prefer previous error.
       }
     }
   }
@@ -83,15 +91,18 @@ public class SqlSessionFactoryBuilder {
     } finally {
       ErrorContext.instance().reset();
       try {
-        if (inputStream != null) {
-          inputStream.close();
-        }
+        inputStream.close();
       } catch (IOException e) {
         // Intentionally ignore. Prefer previous error.
       }
     }
   }
 
+  /**
+   * 根据配置信息建造一个SqlSessionFactory对象
+   * @param config 配置信息
+   * @return SqlSessionFactory对象
+   */
   public SqlSessionFactory build(Configuration config) {
     return new DefaultSqlSessionFactory(config);
   }

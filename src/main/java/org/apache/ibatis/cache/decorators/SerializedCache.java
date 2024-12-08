@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,6 @@ import java.io.Serializable;
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheException;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.io.SerialFilterChecker;
 
 /**
  * @author Clinton Begin
@@ -50,17 +49,32 @@ public class SerializedCache implements Cache {
     return delegate.getSize();
   }
 
+  /**
+   * 向缓存写入一条信息
+   * @param key 信息的键
+   * @param object 信息的值
+   */
   @Override
   public void putObject(Object key, Object object) {
-    if ((object != null) && !(object instanceof Serializable)) {
+    if (object == null || object instanceof Serializable) { // 要缓存的数据必须是可以序列化的
+      // 将数据序列化后写入缓存
+      delegate.putObject(key, serialize((Serializable) object));
+    } else { // 要缓存的数据不可序列化
+      // 抛出异常
       throw new CacheException("SharedCache failed to make a copy of a non-serializable object: " + object);
     }
-    delegate.putObject(key, serialize((Serializable) object));
   }
 
+  /**
+   * 从缓存中读取一条信息
+   * @param key 信息的键
+   * @return 信息的值
+   */
   @Override
   public Object getObject(Object key) {
+    // 读取缓存中的序列化串
     Object object = delegate.getObject(key);
+    // 反序列化后返回
     return object == null ? null : deserialize((byte[]) object);
   }
 
@@ -86,7 +100,7 @@ public class SerializedCache implements Cache {
 
   private byte[] serialize(Serializable value) {
     try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+         ObjectOutputStream oos = new ObjectOutputStream(bos)) {
       oos.writeObject(value);
       oos.flush();
       return bos.toByteArray();
@@ -96,10 +110,9 @@ public class SerializedCache implements Cache {
   }
 
   private Serializable deserialize(byte[] value) {
-    SerialFilterChecker.check();
     Serializable result;
     try (ByteArrayInputStream bis = new ByteArrayInputStream(value);
-        ObjectInputStream ois = new CustomObjectInputStream(bis)) {
+         ObjectInputStream ois = new CustomObjectInputStream(bis)) {
       result = (Serializable) ois.readObject();
     } catch (Exception e) {
       throw new CacheException("Error deserializing object.  Cause: " + e, e);

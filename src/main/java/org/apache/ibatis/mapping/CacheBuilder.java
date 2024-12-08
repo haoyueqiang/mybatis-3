@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,15 +36,24 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
  * @author Clinton Begin
+ * 缓存建造者
  */
 public class CacheBuilder {
+  // Cache的编号
   private final String id;
+  // Cache的实现类
   private Class<? extends Cache> implementation;
+  // Cache的装饰器列表
   private final List<Class<? extends Cache>> decorators;
+  // Cache的大小
   private Integer size;
+  // Cache的清理间隔
   private Long clearInterval;
+  // Cache是否可读写
   private boolean readWrite;
+  // Cache的配置信息
   private Properties properties;
+  // Cache是否阻塞
   private boolean blocking;
 
   public CacheBuilder(String id) {
@@ -89,23 +98,38 @@ public class CacheBuilder {
     return this;
   }
 
+  /**
+   * 组建缓存
+   * @return 缓存对象
+   */
   public Cache build() {
+    // 设置缓存的默认实现、默认装饰器（仅设置，并未装配）
     setDefaultImplementations();
+    // 创建默认的缓存
     Cache cache = newBaseCacheInstance(implementation, id);
+    // 设置缓存的属性
     setCacheProperties(cache);
-    // issue #352, do not apply decorators to custom caches
-    if (PerpetualCache.class.equals(cache.getClass())) {
+    if (PerpetualCache.class.equals(cache.getClass())) { // 缓存实现是PerpetualCache，即不是用户自定义的缓存实现
+      // 为缓存逐级嵌套自定义的装饰器
       for (Class<? extends Cache> decorator : decorators) {
+        // 生成装饰器实例，并装配。入参依次是装饰器类、被装饰的缓存
         cache = newCacheDecoratorInstance(decorator, cache);
+        // 为装饰器设置属性
         setCacheProperties(cache);
       }
+      // 为缓存增加标准的装饰器
       cache = setStandardDecorators(cache);
     } else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
+      // 增加日志装饰器
       cache = new LoggingCache(cache);
     }
+    // 返回被包装好的缓存
     return cache;
   }
 
+  /**
+   * 设置缓存的默认实现和默认装饰器
+   */
   private void setDefaultImplementations() {
     if (implementation == null) {
       implementation = PerpetualCache.class;
@@ -115,24 +139,36 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 为缓存增加标准的装饰器
+   * @param cache 被装饰的缓存
+   * @return 装饰结束的缓存
+   */
   private Cache setStandardDecorators(Cache cache) {
     try {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
+      // 设置缓存大小
       if (size != null && metaCache.hasSetter("size")) {
         metaCache.setValue("size", size);
       }
+      // 如果定义了清理间隔，则使用定时清理装饰器装饰缓存
       if (clearInterval != null) {
         cache = new ScheduledCache(cache);
         ((ScheduledCache) cache).setClearInterval(clearInterval);
       }
+      // 如果允许读写，则使用序列化装饰器装饰缓存
       if (readWrite) {
         cache = new SerializedCache(cache);
       }
+      // 使用日志装饰器装饰缓存
       cache = new LoggingCache(cache);
+      // 使用同步装饰器装饰缓存
       cache = new SynchronizedCache(cache);
+      // 如果启用了阻塞功能，则使用阻塞装饰器装饰缓存
       if (blocking) {
         cache = new BlockingCache(cache);
       }
+      // 返回被层层装饰的缓存
       return cache;
     } catch (Exception e) {
       throw new CacheException("Error building standard cache decorators.  Cause: " + e, e);
@@ -149,19 +185,26 @@ public class CacheBuilder {
           Class<?> type = metaCache.getSetterType(name);
           if (String.class == type) {
             metaCache.setValue(name, value);
-          } else if (int.class == type || Integer.class == type) {
+          } else if (int.class == type
+              || Integer.class == type) {
             metaCache.setValue(name, Integer.valueOf(value));
-          } else if (long.class == type || Long.class == type) {
+          } else if (long.class == type
+              || Long.class == type) {
             metaCache.setValue(name, Long.valueOf(value));
-          } else if (short.class == type || Short.class == type) {
+          } else if (short.class == type
+              || Short.class == type) {
             metaCache.setValue(name, Short.valueOf(value));
-          } else if (byte.class == type || Byte.class == type) {
+          } else if (byte.class == type
+              || Byte.class == type) {
             metaCache.setValue(name, Byte.valueOf(value));
-          } else if (float.class == type || Float.class == type) {
+          } else if (float.class == type
+              || Float.class == type) {
             metaCache.setValue(name, Float.valueOf(value));
-          } else if (boolean.class == type || Boolean.class == type) {
+          } else if (boolean.class == type
+              || Boolean.class == type) {
             metaCache.setValue(name, Boolean.valueOf(value));
-          } else if (double.class == type || Double.class == type) {
+          } else if (double.class == type
+              || Double.class == type) {
             metaCache.setValue(name, Double.valueOf(value));
           } else {
             throw new CacheException("Unsupported property type for cache: '" + name + "' of type " + type);
@@ -173,8 +216,8 @@ public class CacheBuilder {
       try {
         ((InitializingObject) cache).initialize();
       } catch (Exception e) {
-        throw new CacheException(
-            "Failed cache initialization for '" + cache.getId() + "' on '" + cache.getClass().getName() + "'", e);
+        throw new CacheException("Failed cache initialization for '"
+          + cache.getId() + "' on '" + cache.getClass().getName() + "'", e);
       }
     }
   }
@@ -193,8 +236,7 @@ public class CacheBuilder {
       return cacheClass.getConstructor(String.class);
     } catch (Exception e) {
       throw new CacheException("Invalid base cache implementation (" + cacheClass + ").  "
-          + "Base cache implementations must have a constructor that takes a String id as a parameter.  Cause: " + e,
-          e);
+        + "Base cache implementations must have a constructor that takes a String id as a parameter.  Cause: " + e, e);
     }
   }
 
@@ -212,7 +254,7 @@ public class CacheBuilder {
       return cacheClass.getConstructor(Cache.class);
     } catch (Exception e) {
       throw new CacheException("Invalid cache decorator (" + cacheClass + ").  "
-          + "Cache decorators must have a constructor that takes a Cache instance as a parameter.  Cause: " + e, e);
+        + "Cache decorators must have a constructor that takes a Cache instance as a parameter.  Cause: " + e, e);
     }
   }
 }

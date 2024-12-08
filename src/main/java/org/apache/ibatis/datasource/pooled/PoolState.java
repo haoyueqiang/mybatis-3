@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,162 +17,110 @@ package org.apache.ibatis.datasource.pooled;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Clinton Begin
  */
+// 存储了所有的连接
 public class PoolState {
 
-  // This lock does not guarantee consistency.
-  // Field values can be modified in PooledDataSource
-  // after the instance is returned from
-  // PooledDataSource#getPoolState().
-  // A possible fix is to create and return a 'snapshot'.
-  private final ReentrantLock lock = new ReentrantLock();
-
+  // 池化数据源
   protected PooledDataSource dataSource;
-
+  // 空闲的连接
   protected final List<PooledConnection> idleConnections = new ArrayList<>();
+  // 活动的连接
   protected final List<PooledConnection> activeConnections = new ArrayList<>();
-  protected long requestCount;
-  protected long accumulatedRequestTime;
-  protected long accumulatedCheckoutTime;
-  protected long claimedOverdueConnectionCount;
-  protected long accumulatedCheckoutTimeOfOverdueConnections;
-  protected long accumulatedWaitTime;
-  protected long hadToWaitCount;
-  protected long badConnectionCount;
+  // 连接被取出的次数
+  protected long requestCount = 0;
+  // 取出请求花费时间的累计值。从准备取出请求到取出结束的时间为取出请求花费的时间
+  protected long accumulatedRequestTime = 0;
+  // 累积被检出的时间
+  protected long accumulatedCheckoutTime = 0;
+  // 声明的过期连接数
+  protected long claimedOverdueConnectionCount = 0;
+  // 过期的连接数的总检出时长
+  protected long accumulatedCheckoutTimeOfOverdueConnections = 0;
+  // 总等待时间
+  protected long accumulatedWaitTime = 0;
+  // 等待的轮次
+  protected long hadToWaitCount = 0;
+  // 坏连接的数目
+  protected long badConnectionCount = 0;
 
   public PoolState(PooledDataSource dataSource) {
     this.dataSource = dataSource;
   }
 
-  public long getRequestCount() {
-    lock.lock();
-    try {
-      return requestCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getRequestCount() {
+    return requestCount;
   }
 
-  public long getAverageRequestTime() {
-    lock.lock();
-    try {
-      return requestCount == 0 ? 0 : accumulatedRequestTime / requestCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getAverageRequestTime() {
+    return requestCount == 0 ? 0 : accumulatedRequestTime / requestCount;
   }
 
-  public long getAverageWaitTime() {
-    lock.lock();
-    try {
-      return hadToWaitCount == 0 ? 0 : accumulatedWaitTime / hadToWaitCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getAverageWaitTime() {
+    return hadToWaitCount == 0 ? 0 : accumulatedWaitTime / hadToWaitCount;
+
   }
 
-  public long getHadToWaitCount() {
-    lock.lock();
-    try {
-      return hadToWaitCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getHadToWaitCount() {
+    return hadToWaitCount;
   }
 
-  public long getBadConnectionCount() {
-    lock.lock();
-    try {
-      return badConnectionCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getBadConnectionCount() {
+    return badConnectionCount;
   }
 
-  public long getClaimedOverdueConnectionCount() {
-    lock.lock();
-    try {
-      return claimedOverdueConnectionCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getClaimedOverdueConnectionCount() {
+    return claimedOverdueConnectionCount;
   }
 
-  public long getAverageOverdueCheckoutTime() {
-    lock.lock();
-    try {
-      return claimedOverdueConnectionCount == 0 ? 0
-          : accumulatedCheckoutTimeOfOverdueConnections / claimedOverdueConnectionCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getAverageOverdueCheckoutTime() {
+    return claimedOverdueConnectionCount == 0 ? 0 : accumulatedCheckoutTimeOfOverdueConnections / claimedOverdueConnectionCount;
   }
 
-  public long getAverageCheckoutTime() {
-    lock.lock();
-    try {
-      return requestCount == 0 ? 0 : accumulatedCheckoutTime / requestCount;
-    } finally {
-      lock.unlock();
-    }
+  public synchronized long getAverageCheckoutTime() {
+    return requestCount == 0 ? 0 : accumulatedCheckoutTime / requestCount;
   }
 
-  public int getIdleConnectionCount() {
-    lock.lock();
-    try {
-      return idleConnections.size();
-    } finally {
-      lock.unlock();
-    }
+
+  public synchronized int getIdleConnectionCount() {
+    return idleConnections.size();
   }
 
-  public int getActiveConnectionCount() {
-    lock.lock();
-    try {
-      return activeConnections.size();
-    } finally {
-      lock.unlock();
-    }
+  public synchronized int getActiveConnectionCount() {
+    return activeConnections.size();
   }
 
   @Override
-  public String toString() {
-    lock.lock();
-    try {
-      StringBuilder builder = new StringBuilder();
-      builder.append("\n===CONFIGURATION==============================================");
-      builder.append("\n jdbcDriver                     ").append(dataSource.getDriver());
-      builder.append("\n jdbcUrl                        ").append(dataSource.getUrl());
-      builder.append("\n jdbcUsername                   ").append(dataSource.getUsername());
-      builder.append("\n jdbcPassword                   ")
-          .append(dataSource.getPassword() == null ? "NULL" : "************");
-      builder.append("\n poolMaxActiveConnections       ").append(dataSource.poolMaximumActiveConnections);
-      builder.append("\n poolMaxIdleConnections         ").append(dataSource.poolMaximumIdleConnections);
-      builder.append("\n poolMaxCheckoutTime            ").append(dataSource.poolMaximumCheckoutTime);
-      builder.append("\n poolTimeToWait                 ").append(dataSource.poolTimeToWait);
-      builder.append("\n poolPingEnabled                ").append(dataSource.poolPingEnabled);
-      builder.append("\n poolPingQuery                  ").append(dataSource.poolPingQuery);
-      builder.append("\n poolPingConnectionsNotUsedFor  ").append(dataSource.poolPingConnectionsNotUsedFor);
-      builder.append("\n ---STATUS-----------------------------------------------------");
-      builder.append("\n activeConnections              ").append(getActiveConnectionCount());
-      builder.append("\n idleConnections                ").append(getIdleConnectionCount());
-      builder.append("\n requestCount                   ").append(getRequestCount());
-      builder.append("\n averageRequestTime             ").append(getAverageRequestTime());
-      builder.append("\n averageCheckoutTime            ").append(getAverageCheckoutTime());
-      builder.append("\n claimedOverdue                 ").append(getClaimedOverdueConnectionCount());
-      builder.append("\n averageOverdueCheckoutTime     ").append(getAverageOverdueCheckoutTime());
-      builder.append("\n hadToWait                      ").append(getHadToWaitCount());
-      builder.append("\n averageWaitTime                ").append(getAverageWaitTime());
-      builder.append("\n badConnectionCount             ").append(getBadConnectionCount());
-      builder.append("\n===============================================================");
-      return builder.toString();
-    } finally {
-      lock.unlock();
-    }
+  public synchronized String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("\n===CONFINGURATION==============================================");
+    builder.append("\n jdbcDriver                     ").append(dataSource.getDriver());
+    builder.append("\n jdbcUrl                        ").append(dataSource.getUrl());
+    builder.append("\n jdbcUsername                   ").append(dataSource.getUsername());
+    builder.append("\n jdbcPassword                   ").append(dataSource.getPassword() == null ? "NULL" : "************");
+    builder.append("\n poolMaxActiveConnections       ").append(dataSource.poolMaximumActiveConnections);
+    builder.append("\n poolMaxIdleConnections         ").append(dataSource.poolMaximumIdleConnections);
+    builder.append("\n poolMaxCheckoutTime            ").append(dataSource.poolMaximumCheckoutTime);
+    builder.append("\n poolTimeToWait                 ").append(dataSource.poolTimeToWait);
+    builder.append("\n poolPingEnabled                ").append(dataSource.poolPingEnabled);
+    builder.append("\n poolPingQuery                  ").append(dataSource.poolPingQuery);
+    builder.append("\n poolPingConnectionsNotUsedFor  ").append(dataSource.poolPingConnectionsNotUsedFor);
+    builder.append("\n ---STATUS-----------------------------------------------------");
+    builder.append("\n activeConnections              ").append(getActiveConnectionCount());
+    builder.append("\n idleConnections                ").append(getIdleConnectionCount());
+    builder.append("\n requestCount                   ").append(getRequestCount());
+    builder.append("\n averageRequestTime             ").append(getAverageRequestTime());
+    builder.append("\n averageCheckoutTime            ").append(getAverageCheckoutTime());
+    builder.append("\n claimedOverdue                 ").append(getClaimedOverdueConnectionCount());
+    builder.append("\n averageOverdueCheckoutTime     ").append(getAverageOverdueCheckoutTime());
+    builder.append("\n hadToWait                      ").append(getHadToWaitCount());
+    builder.append("\n averageWaitTime                ").append(getAverageWaitTime());
+    builder.append("\n badConnectionCount             ").append(getBadConnectionCount());
+    builder.append("\n===============================================================");
+    return builder.toString();
   }
 
 }

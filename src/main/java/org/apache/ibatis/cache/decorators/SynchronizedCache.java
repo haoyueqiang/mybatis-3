@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +15,6 @@
  */
 package org.apache.ibatis.cache.decorators;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.ibatis.cache.Cache;
 
 /**
@@ -24,7 +22,6 @@ import org.apache.ibatis.cache.Cache;
  */
 public class SynchronizedCache implements Cache {
 
-  private final ReentrantLock lock = new ReentrantLock();
   private final Cache delegate;
 
   public SynchronizedCache(Cache delegate) {
@@ -37,53 +34,28 @@ public class SynchronizedCache implements Cache {
   }
 
   @Override
-  public int getSize() {
-    lock.lock();
-    try {
-      return delegate.getSize();
-    } finally {
-      lock.unlock();
-    }
+  public synchronized int getSize() {
+    return delegate.getSize();
   }
 
   @Override
-  public void putObject(Object key, Object object) {
-    lock.lock();
-    try {
-      delegate.putObject(key, object);
-    } finally {
-      lock.unlock();
-    }
+  public synchronized void putObject(Object key, Object object) {
+    delegate.putObject(key, object);
   }
 
   @Override
-  public Object getObject(Object key) {
-    lock.lock();
-    try {
-      return delegate.getObject(key);
-    } finally {
-      lock.unlock();
-    }
+  public synchronized Object getObject(Object key) {
+    return delegate.getObject(key);
   }
 
   @Override
-  public Object removeObject(Object key) {
-    lock.lock();
-    try {
-      return delegate.removeObject(key);
-    } finally {
-      lock.unlock();
-    }
+  public synchronized Object removeObject(Object key) {
+    return delegate.removeObject(key);
   }
 
   @Override
-  public void clear() {
-    lock.lock();
-    try {
-      delegate.clear();
-    } finally {
-      lock.unlock();
-    }
+  public synchronized void clear() {
+    delegate.clear();
   }
 
   @Override

@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,11 +26,10 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
- * 继承 BaseWrapper 抽象类，Map 对象的 ObjectWrapper 实现类。
  */
 public class MapWrapper extends BaseWrapper {
 
-  protected final Map<String, Object> map;
+  private final Map<String, Object> map;
 
   public MapWrapper(MetaObject metaObject, Map<String, Object> map) {
     super(metaObject);
@@ -39,10 +38,9 @@ public class MapWrapper extends BaseWrapper {
 
   @Override
   public Object get(PropertyTokenizer prop) {
-    if (prop.hasNext()) {
-      return getChildValue(prop);
-    } else if (prop.getIndex() != null) {
-      return getCollectionValue(prop, resolveCollection(prop, map));
+    if (prop.getIndex() != null) {
+      Object collection = resolveCollection(prop, map);
+      return getCollectionValue(prop, collection);
     } else {
       return map.get(prop.getName());
     }
@@ -50,10 +48,9 @@ public class MapWrapper extends BaseWrapper {
 
   @Override
   public void set(PropertyTokenizer prop, Object value) {
-    if (prop.hasNext()) {
-      setChildValue(prop, value);
-    } else if (prop.getIndex() != null) {
-      setCollectionValue(prop, resolveCollection(prop, map), value);
+    if (prop.getIndex() != null) {
+      Object collection = resolveCollection(prop, map);
+      setCollectionValue(prop, collection, value);
     } else {
       map.put(prop.getName(), value);
     }
@@ -66,12 +63,12 @@ public class MapWrapper extends BaseWrapper {
 
   @Override
   public String[] getGetterNames() {
-    return map.keySet().toArray(new String[0]);
+    return map.keySet().toArray(new String[map.keySet().size()]);
   }
 
   @Override
   public String[] getSetterNames() {
-    return map.keySet().toArray(new String[0]);
+    return map.keySet().toArray(new String[map.keySet().size()]);
   }
 
   @Override
@@ -84,11 +81,12 @@ public class MapWrapper extends BaseWrapper {
       } else {
         return metaValue.getSetterType(prop.getChildren());
       }
-    }
-    if (map.get(name) != null) {
-      return map.get(name).getClass();
     } else {
-      return Object.class;
+      if (map.get(name) != null) {
+        return map.get(name).getClass();
+      } else {
+        return Object.class;
+      }
     }
   }
 
@@ -102,11 +100,12 @@ public class MapWrapper extends BaseWrapper {
       } else {
         return metaValue.getGetterType(prop.getChildren());
       }
-    }
-    if (map.get(name) != null) {
-      return map.get(name).getClass();
     } else {
-      return Object.class;
+      if (map.get(name) != null) {
+        return map.get(name).getClass();
+      } else {
+        return Object.class;
+      }
     }
   }
 
@@ -118,18 +117,19 @@ public class MapWrapper extends BaseWrapper {
   @Override
   public boolean hasGetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
-      return map.containsKey(prop.getName());
-    }
-    if (map.containsKey(prop.getIndexedName())) {
-      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
-      if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
-        return true;
+    if (prop.hasNext()) {
+      if (map.containsKey(prop.getIndexedName())) {
+        MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+        if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+          return true;
+        } else {
+          return metaValue.hasGetter(prop.getChildren());
+        }
       } else {
-        return metaValue.hasGetter(prop.getChildren());
+        return false;
       }
     } else {
-      return false;
+      return map.containsKey(prop.getName());
     }
   }
 
@@ -137,8 +137,7 @@ public class MapWrapper extends BaseWrapper {
   public MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory) {
     HashMap<String, Object> map = new HashMap<>();
     set(prop, map);
-    return MetaObject.forObject(map, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(),
-        metaObject.getReflectorFactory());
+    return MetaObject.forObject(map, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(), metaObject.getReflectorFactory());
   }
 
   @Override

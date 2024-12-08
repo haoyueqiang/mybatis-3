@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,13 +32,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLMapperEntityResolver implements EntityResolver {
 
-  /**
-   * 本地 mybatis-config.dtd 文件
-   */
   private static final String IBATIS_CONFIG_SYSTEM = "ibatis-3-config.dtd";
-  /**
-   * 本地 mybatis-mapper.dtd 文件
-   */
   private static final String IBATIS_MAPPER_SYSTEM = "ibatis-3-mapper.dtd";
   private static final String MYBATIS_CONFIG_SYSTEM = "mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_SYSTEM = "mybatis-3-mapper.dtd";
@@ -49,27 +43,37 @@ public class XMLMapperEntityResolver implements EntityResolver {
   /**
    * Converts a public DTD into a local one.
    *
-   * @param publicId
-   *          The public id that is what comes after "PUBLIC"
-   * @param systemId
-   *          The system id that is what comes after the public id.
-   *
+   * @param publicId The public id that is what comes after "PUBLIC"
+   * @param systemId The system id that is what comes after the public id.
    * @return The InputSource for the DTD
    *
-   * @throws org.xml.sax.SAXException
-   *           If anything goes wrong
+   * @throws org.xml.sax.SAXException If anything goes wrong
+   */
+
+  /**
+   * 在一个XML文件的头部是这样的：
+   * <!DOCTYPE configuration
+   *         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+   *         "http://mybatis.org/dtd/mybatis-3-config.dtd">
+   *  那么上述例子中，
+   * @param publicId 为-//mybatis.org//DTD Config 3.0//EN
+   * @param systemId 为http://mybatis.org/dtd/mybatis-3-config.dtd
+   * @return 对应DTD文档的输入流
+   * @throws SAXException
    */
   @Override
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
     try {
       if (systemId != null) {
+        // 将systemId转为全小写
         String lowerCaseSystemId = systemId.toLowerCase(Locale.ENGLISH);
         if (lowerCaseSystemId.contains(MYBATIS_CONFIG_SYSTEM) || lowerCaseSystemId.contains(IBATIS_CONFIG_SYSTEM)) {
-          // 本地 mybatis-config.dtd 文件
+          // 说明这个是配置文档
+          // 直接把本地配置文档的dtd文件返回
           return getInputSource(MYBATIS_CONFIG_DTD, publicId, systemId);
-        }
-        if (lowerCaseSystemId.contains(MYBATIS_MAPPER_SYSTEM) || lowerCaseSystemId.contains(IBATIS_MAPPER_SYSTEM)) {
-          // 本地 mybatis-mapper.dtd 文件
+        } else if (lowerCaseSystemId.contains(MYBATIS_MAPPER_SYSTEM) || lowerCaseSystemId.contains(IBATIS_MAPPER_SYSTEM)) {
+          // 说明这个是映射文档
+          // 直接把本地映射文档的dtd文件返回
           return getInputSource(MYBATIS_MAPPER_DTD, publicId, systemId);
         }
       }
@@ -79,14 +83,13 @@ public class XMLMapperEntityResolver implements EntityResolver {
     }
   }
 
+  // 获取本地的dtd文件，并设置其publicId、systemId
   private InputSource getInputSource(String path, String publicId, String systemId) {
     InputSource source = null;
     if (path != null) {
       try {
-        // 创建 InputSource 对象
         InputStream in = Resources.getResourceAsStream(path);
         source = new InputSource(in);
-        // 设置  publicId、systemId 属性
         source.setPublicId(publicId);
         source.setSystemId(systemId);
       } catch (IOException e) {

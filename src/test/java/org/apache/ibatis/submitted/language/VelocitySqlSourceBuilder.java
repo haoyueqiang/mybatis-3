@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,8 +51,8 @@ public class VelocitySqlSourceBuilder extends BaseBuilder {
 
   private static class ParameterMappingTokenHandler extends BaseBuilder implements TokenHandler {
 
-    private final List<ParameterMapping> parameterMappings = new ArrayList<>();
-    private final Class<?> parameterType;
+    private List<ParameterMapping> parameterMappings = new ArrayList<>();
+    private Class<?> parameterType;
 
     public ParameterMappingTokenHandler(Configuration configuration, Class<?> parameterType) {
       super(configuration);
@@ -117,8 +117,7 @@ public class VelocitySqlSourceBuilder extends BaseBuilder {
         } else if ("expression".equals(name)) {
           builder.expression(value);
         } else {
-          throw new BuilderException("An invalid property '" + name + "' was found in mapping @{" + content
-              + "}.  Valid properties are " + parameterProperties);
+          throw new BuilderException("An invalid property '" + name + "' was found in mapping @{" + content + "}.  Valid properties are " + parameterProperties);
         }
       }
       if (typeHandlerAlias != null) {
@@ -133,8 +132,7 @@ public class VelocitySqlSourceBuilder extends BaseBuilder {
       } catch (BuilderException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new BuilderException("Parsing error was found in mapping @{" + content
-            + "}.  Check syntax #{property|(expression), var1=value1, var2=value2, ...} ", ex);
+        throw new BuilderException("Parsing error was found in mapping @{" + content + "}.  Check syntax #{property|(expression), var1=value1, var2=value2, ...} ", ex);
       }
     }
   }

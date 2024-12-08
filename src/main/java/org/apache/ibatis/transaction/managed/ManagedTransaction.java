@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,6 @@ package org.apache.ibatis.transaction.managed;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
 
 import org.apache.ibatis.logging.Log;
@@ -26,21 +25,28 @@ import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
- * {@link Transaction} that lets the container manage the full lifecycle of the transaction. Delays connection retrieval
- * until getConnection() is called. Ignores all commit or rollback requests. By default, it closes the connection but
- * can be configured not to do it.
+ * {@link Transaction} that lets the container manage the full lifecycle of the transaction.
+ * Delays connection retrieval until getConnection() is called.
+ * Ignores all commit or rollback requests.
+ * By default, it closes the connection but can be configured not to do it.
  *
  * @author Clinton Begin
  *
  * @see ManagedTransactionFactory
  */
+// 由容器进行事务管理
+// 因此大多数操作这里不需要处理
 public class ManagedTransaction implements Transaction {
 
   private static final Log log = LogFactory.getLog(ManagedTransaction.class);
 
+  // 数据源
   private DataSource dataSource;
+  // 事务隔离级别
   private TransactionIsolationLevel level;
+  // 数据库连接
   private Connection connection;
+  // 是否关闭数据库连接
   private final boolean closeConnection;
 
   public ManagedTransaction(Connection connection, boolean closeConnection) {
@@ -62,11 +68,19 @@ public class ManagedTransaction implements Transaction {
     return this.connection;
   }
 
+  /**
+   * 提交事务
+   * @throws SQLException
+   */
   @Override
   public void commit() throws SQLException {
     // Does nothing
   }
 
+  /**
+   * 回滚事务
+   * @throws SQLException
+   */
   @Override
   public void rollback() throws SQLException {
     // Does nothing

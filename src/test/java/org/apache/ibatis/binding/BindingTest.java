@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,18 +15,9 @@
  */
 package org.apache.ibatis.binding;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static com.googlecode.catchexception.apis.BDDCatchException.when;
+import static com.googlecode.catchexception.apis.BDDCatchException.*;
 import static org.assertj.core.api.BDDAssertions.then;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -45,7 +36,6 @@ import javax.sql.DataSource;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.ibatis.BaseDataTest;
-import org.apache.ibatis.binding.MapperProxy.MapperMethodInvoker;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.domain.blog.Author;
 import org.apache.ibatis.domain.blog.Blog;
@@ -106,14 +96,11 @@ class BindingTest {
   void shouldFindPostsInList() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      List<Post> posts = mapper.findPostsInList(new ArrayList<Integer>() {
-        private static final long serialVersionUID = 1L;
-        {
-          add(1);
-          add(3);
-          add(5);
-        }
-      });
+      List<Post> posts = mapper.findPostsInList(new ArrayList<Integer>() {{
+        add(1);
+        add(3);
+        add(5);
+      }});
       assertEquals(3, posts.size());
       session.rollback();
     }
@@ -123,7 +110,7 @@ class BindingTest {
   void shouldFindPostsInArray() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Integer[] params = { 1, 3, 5 };
+      Integer[] params = new Integer[]{1, 3, 5};
       List<Post> posts = mapper.findPostsInArray(params);
       assertEquals(3, posts.size());
       session.rollback();
@@ -158,12 +145,11 @@ class BindingTest {
       try {
         BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
         Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-        when(() -> mapper.insertAuthorInvalidSelectKey(author));
-        then(caughtException()).isInstanceOf(PersistenceException.class)
-            .hasMessageContaining("### The error may exist in org/apache/ibatis/binding/BoundAuthorMapper.xml"
-                + System.lineSeparator()
-                + "### The error may involve org.apache.ibatis.binding.BoundAuthorMapper.insertAuthorInvalidSelectKey!selectKey"
-                + System.lineSeparator() + "### The error occurred while executing a query");
+        when(mapper).insertAuthorInvalidSelectKey(author);
+        then(caughtException()).isInstanceOf(PersistenceException.class).hasMessageContaining(
+            "### The error may exist in org/apache/ibatis/binding/BoundAuthorMapper.xml" + System.lineSeparator() +
+                "### The error may involve org.apache.ibatis.binding.BoundAuthorMapper.insertAuthorInvalidSelectKey!selectKey" + System.lineSeparator() +
+                "### The error occurred while executing a query");
       } finally {
         session.rollback();
       }
@@ -176,11 +162,11 @@ class BindingTest {
       try {
         BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
         Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-        when(() -> mapper.insertAuthorInvalidInsert(author));
+        when(mapper).insertAuthorInvalidInsert(author);
         then(caughtException()).isInstanceOf(PersistenceException.class).hasMessageContaining(
-            "### The error may exist in org/apache/ibatis/binding/BoundAuthorMapper.xml" + System.lineSeparator()
-                + "### The error may involve org.apache.ibatis.binding.BoundAuthorMapper.insertAuthorInvalidInsert"
-                + System.lineSeparator() + "### The error occurred while executing an update");
+            "### The error may exist in org/apache/ibatis/binding/BoundAuthorMapper.xml" + System.lineSeparator() +
+                "### The error may involve org.apache.ibatis.binding.BoundAuthorMapper.insertAuthorInvalidInsert" + System.lineSeparator() +
+                "### The error occurred while executing an update");
       } finally {
         session.rollback();
       }
@@ -224,9 +210,9 @@ class BindingTest {
   void shouldExecuteBoundSelectMapOfBlogsById() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      Map<Integer, Blog> blogs = mapper.selectBlogsAsMapById();
+      Map<Integer,Blog> blogs = mapper.selectBlogsAsMapById();
       assertEquals(2, blogs.size());
-      for (Map.Entry<Integer, Blog> blogEntry : blogs.entrySet()) {
+      for(Map.Entry<Integer,Blog> blogEntry : blogs.entrySet()) {
         assertEquals(blogEntry.getKey(), (Integer) blogEntry.getValue().getId());
       }
     }
@@ -265,14 +251,14 @@ class BindingTest {
   void shouldExecuteMultipleBoundSelectMapOfBlogsByIdInSameSessionWithoutClearingLocalCache() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      Map<Integer, Blog> blogs = mapper.selectBlogsAsMapById();
-      Map<Integer, Blog> moreBlogs = mapper.selectBlogsAsMapById();
+      Map<Integer,Blog> blogs = mapper.selectBlogsAsMapById();
+      Map<Integer,Blog> moreBlogs = mapper.selectBlogsAsMapById();
       assertEquals(2, blogs.size());
       assertEquals(2, moreBlogs.size());
-      for (Map.Entry<Integer, Blog> blogEntry : blogs.entrySet()) {
+      for(Map.Entry<Integer,Blog> blogEntry : blogs.entrySet()) {
         assertEquals(blogEntry.getKey(), (Integer) blogEntry.getValue().getId());
       }
-      for (Map.Entry<Integer, Blog> blogEntry : moreBlogs.entrySet()) {
+      for(Map.Entry<Integer,Blog> blogEntry : moreBlogs.entrySet()) {
         assertEquals(blogEntry.getKey(), (Integer) blogEntry.getValue().getId());
       }
     }
@@ -280,20 +266,20 @@ class BindingTest {
 
   @Test
   void shouldExecuteMultipleBoundSelectMapOfBlogsByIdBetweenTwoSessionsWithGlobalCacheEnabled() {
-    Map<Integer, Blog> blogs;
+    Map<Integer,Blog> blogs;
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
       blogs = mapper.selectBlogsAsMapById();
     }
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      Map<Integer, Blog> moreBlogs = mapper.selectBlogsAsMapById();
+      Map<Integer,Blog> moreBlogs = mapper.selectBlogsAsMapById();
       assertEquals(2, blogs.size());
       assertEquals(2, moreBlogs.size());
-      for (Map.Entry<Integer, Blog> blogEntry : blogs.entrySet()) {
+      for(Map.Entry<Integer,Blog> blogEntry : blogs.entrySet()) {
         assertEquals(blogEntry.getKey(), (Integer) blogEntry.getValue().getId());
       }
-      for (Map.Entry<Integer, Blog> blogEntry : moreBlogs.entrySet()) {
+      for(Map.Entry<Integer,Blog> blogEntry : moreBlogs.entrySet()) {
         assertEquals(blogEntry.getKey(), (Integer) blogEntry.getValue().getId());
       }
     }
@@ -321,7 +307,7 @@ class BindingTest {
   void shouldExecuteBoundSelectListOfBlogsAsMaps() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      List<Map<String, Object>> blogs = mapper.selectBlogsAsMaps();
+      List<Map<String,Object>> blogs = mapper.selectBlogsAsMaps();
       assertEquals(2, blogs.size());
     }
   }
@@ -330,7 +316,7 @@ class BindingTest {
   void shouldSelectListOfPostsLike() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      List<Post> posts = mapper.selectPostsLike(new RowBounds(1, 1), "%a%");
+      List<Post> posts = mapper.selectPostsLike(new RowBounds(1,1),"%a%");
       assertEquals(1, posts.size());
     }
   }
@@ -339,7 +325,7 @@ class BindingTest {
   void shouldSelectListOfPostsLikeTwoParameters() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      List<Post> posts = mapper.selectPostsLikeSubjectAndBody(new RowBounds(1, 1), "%a%", "%a%");
+      List<Post> posts = mapper.selectPostsLikeSubjectAndBody(new RowBounds(1,1),"%a%","%a%");
       assertEquals(1, posts.size());
     }
   }
@@ -430,8 +416,7 @@ class BindingTest {
   void shouldSelectOneBlogAsMap() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      Map<String, Object> blog = mapper.selectBlogAsMap(new HashMap<String, Object>() {
-        private static final long serialVersionUID = 1L;
+      Map<String,Object> blog = mapper.selectBlogAsMap(new HashMap<String, Object>() {
         {
           put("id", 1);
         }
@@ -585,42 +570,41 @@ class BindingTest {
     }
   }
 
-  @Test
-  void shouldCacheMapperMethod() throws Exception {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-
-      // Create another mapper instance with a method cache we can test against:
-      final MapperProxyFactory<BoundBlogMapper> mapperProxyFactory = new MapperProxyFactory<>(BoundBlogMapper.class);
-      assertEquals(BoundBlogMapper.class, mapperProxyFactory.getMapperInterface());
-      final BoundBlogMapper mapper = mapperProxyFactory.newInstance(session);
-      assertNotSame(mapper, mapperProxyFactory.newInstance(session));
-      assertTrue(mapperProxyFactory.getMethodCache().isEmpty());
-
-      // Mapper methods we will call later:
-      final Method selectBlog = BoundBlogMapper.class.getMethod("selectBlog", Integer.TYPE);
-      final Method selectBlogByIdUsingConstructor = BoundBlogMapper.class.getMethod("selectBlogByIdUsingConstructor",
-          Integer.TYPE);
-
-      // Call mapper method and verify it is cached:
-      mapper.selectBlog(1);
-      assertEquals(1, mapperProxyFactory.getMethodCache().size());
-      assertTrue(mapperProxyFactory.getMethodCache().containsKey(selectBlog));
-      final MapperMethodInvoker cachedSelectBlog = mapperProxyFactory.getMethodCache().get(selectBlog);
-
-      // Call mapper method again and verify the cache is unchanged:
-      session.clearCache();
-      mapper.selectBlog(1);
-      assertEquals(1, mapperProxyFactory.getMethodCache().size());
-      assertSame(cachedSelectBlog, mapperProxyFactory.getMethodCache().get(selectBlog));
-
-      // Call another mapper method and verify that it shows up in the cache as well:
-      session.clearCache();
-      mapper.selectBlogByIdUsingConstructor(1);
-      assertEquals(2, mapperProxyFactory.getMethodCache().size());
-      assertSame(cachedSelectBlog, mapperProxyFactory.getMethodCache().get(selectBlog));
-      assertTrue(mapperProxyFactory.getMethodCache().containsKey(selectBlogByIdUsingConstructor));
-    }
-  }
+//  @Test
+//  void shouldCacheMapperMethod() throws Exception {
+//    try (SqlSession session = sqlSessionFactory.openSession()) {
+//
+//      // Create another mapper instance with a method cache we can test against:
+//      final MapperProxyFactory<BoundBlogMapper> mapperProxyFactory = new MapperProxyFactory<BoundBlogMapper>(BoundBlogMapper.class);
+//      assertEquals(BoundBlogMapper.class, mapperProxyFactory.getMapperInterface());
+//      final BoundBlogMapper mapper = mapperProxyFactory.newInstance(session);
+//      assertNotSame(mapper, mapperProxyFactory.newInstance(session));
+//      assertTrue(mapperProxyFactory.getMethodCache().isEmpty());
+//
+//      // Mapper methods we will call later:
+//      final Method selectBlog = BoundBlogMapper.class.getMethod("selectBlog", Integer.TYPE);
+//      final Method selectBlogByIdUsingConstructor = BoundBlogMapper.class.getMethod("selectBlogByIdUsingConstructor", Integer.TYPE);
+//
+//      // Call mapper method and verify it is cached:
+//      mapper.selectBlog(1);
+//      assertEquals(1, mapperProxyFactory.getMethodCache().size());
+//      assertTrue(mapperProxyFactory.getMethodCache().containsKey(selectBlog));
+//      final MapperMethod cachedSelectBlog = mapperProxyFactory.getMethodCache().get(selectBlog);
+//
+//      // Call mapper method again and verify the cache is unchanged:
+//      session.clearCache();
+//      mapper.selectBlog(1);
+//      assertEquals(1, mapperProxyFactory.getMethodCache().size());
+//      assertSame(cachedSelectBlog, mapperProxyFactory.getMethodCache().get(selectBlog));
+//
+//      // Call another mapper method and verify that it shows up in the cache as well:
+//      session.clearCache();
+//      mapper.selectBlogByIdUsingConstructor(1);
+//      assertEquals(2, mapperProxyFactory.getMethodCache().size());
+//      assertSame(cachedSelectBlog, mapperProxyFactory.getMethodCache().get(selectBlog));
+//      assertTrue(mapperProxyFactory.getMethodCache().containsKey(selectBlogByIdUsingConstructor));
+//    }
+//  }
 
   @Test
   void shouldGetBlogsWithAuthorsAndPosts() {
@@ -685,7 +669,7 @@ class BindingTest {
   void executeWithCursorAndRowBounds() {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       BoundBlogMapper mapper = session.getMapper(BoundBlogMapper.class);
-      try (Cursor<Blog> blogs = mapper.openRangeBlogs(new RowBounds(1, 1))) {
+      try (Cursor<Blog> blogs = mapper.openRangeBlogs(new RowBounds(1, 1)) ) {
         Iterator<Blog> blogIterator = blogs.iterator();
         Blog blog = blogIterator.next();
         assertEquals(2, blog.getId());
@@ -702,95 +686,6 @@ class BindingTest {
     assertEquals(2, mapperClasses.size());
     assertTrue(mapperClasses.contains(BoundBlogMapper.class));
     assertTrue(mapperClasses.contains(BoundAuthorMapper.class));
-  }
-
-  @Test
-  void shouldMapPropertiesUsingRepeatableAnnotation() {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-      mapper.insertAuthor(author);
-      Author author2 = mapper.selectAuthorMapToPropertiesUsingRepeatable(author.getId());
-      assertNotNull(author2);
-      assertEquals(author.getId(), author2.getId());
-      assertEquals(author.getUsername(), author2.getUsername());
-      assertEquals(author.getPassword(), author2.getPassword());
-      assertEquals(author.getBio(), author2.getBio());
-      assertEquals(author.getEmail(), author2.getEmail());
-      session.rollback();
-    }
-  }
-
-  @Test
-  void shouldMapConstructorUsingRepeatableAnnotation() {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-      mapper.insertAuthor(author);
-      Author author2 = mapper.selectAuthorMapToConstructorUsingRepeatable(author.getId());
-      assertNotNull(author2);
-      assertEquals(author.getId(), author2.getId());
-      assertEquals(author.getUsername(), author2.getUsername());
-      assertEquals(author.getPassword(), author2.getPassword());
-      assertEquals(author.getBio(), author2.getBio());
-      assertEquals(author.getEmail(), author2.getEmail());
-      assertEquals(author.getFavouriteSection(), author2.getFavouriteSection());
-      session.rollback();
-    }
-  }
-
-  @Test
-  void shouldMapUsingSingleRepeatableAnnotation() {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-      mapper.insertAuthor(author);
-      Author author2 = mapper.selectAuthorUsingSingleRepeatable(author.getId());
-      assertNotNull(author2);
-      assertEquals(author.getId(), author2.getId());
-      assertEquals(author.getUsername(), author2.getUsername());
-      assertNull(author2.getPassword());
-      assertNull(author2.getBio());
-      assertNull(author2.getEmail());
-      assertNull(author2.getFavouriteSection());
-      session.rollback();
-    }
-  }
-
-  @Test
-  void shouldMapWhenSpecifyBothArgAndConstructorArgs() {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-      mapper.insertAuthor(author);
-      Author author2 = mapper.selectAuthorUsingBothArgAndConstructorArgs(author.getId());
-      assertNotNull(author2);
-      assertEquals(author.getId(), author2.getId());
-      assertEquals(author.getUsername(), author2.getUsername());
-      assertEquals(author.getPassword(), author2.getPassword());
-      assertEquals(author.getBio(), author2.getBio());
-      assertEquals(author.getEmail(), author2.getEmail());
-      assertEquals(author.getFavouriteSection(), author2.getFavouriteSection());
-      session.rollback();
-    }
-  }
-
-  @Test
-  void shouldMapWhenSpecifyBothResultAndResults() {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      BoundAuthorMapper mapper = session.getMapper(BoundAuthorMapper.class);
-      Author author = new Author(-1, "cbegin", "******", "cbegin@nowhere.com", "N/A", Section.NEWS);
-      mapper.insertAuthor(author);
-      Author author2 = mapper.selectAuthorUsingBothResultAndResults(author.getId());
-      assertNotNull(author2);
-      assertEquals(author.getId(), author2.getId());
-      assertEquals(author.getUsername(), author2.getUsername());
-      assertNull(author2.getPassword());
-      assertNull(author2.getBio());
-      assertNull(author2.getEmail());
-      assertNull(author2.getFavouriteSection());
-      session.rollback();
-    }
   }
 
 }

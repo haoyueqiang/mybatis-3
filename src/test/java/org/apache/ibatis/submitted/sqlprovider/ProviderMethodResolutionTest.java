@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,6 @@
  *    limitations under the License.
  */
 package org.apache.ibatis.submitted.sqlprovider;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.Reader;
 import java.lang.reflect.Method;
@@ -39,6 +37,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Test for https://github.com/mybatis/mybatis-3/issues/1279
  */
@@ -48,7 +48,8 @@ class ProviderMethodResolutionTest {
 
   @BeforeAll
   static void setUp() throws Exception {
-    try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/sqlprovider/mybatis-config.xml")) {
+    try (Reader reader = Resources
+        .getResourceAsReader("org/apache/ibatis/submitted/sqlprovider/mybatis-config.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
       sqlSessionFactory.getConfiguration().addMapper(ProvideMethodResolverMapper.class);
     }
@@ -66,29 +67,29 @@ class ProviderMethodResolutionTest {
 
   @Test
   void shouldErrorWhenDefaultResolverMethodNameMatchedMethodIsNone() {
-    BuilderException e = Assertions.assertThrows(BuilderException.class, () -> sqlSessionFactory.getConfiguration()
-        .addMapper(DefaultProvideMethodResolverMethodNameMatchedMethodIsNoneMapper.class));
+    BuilderException e = Assertions.assertThrows(BuilderException.class,
+        () -> sqlSessionFactory.getConfiguration().addMapper(DefaultProvideMethodResolverMethodNameMatchedMethodIsNoneMapper.class));
     assertEquals(
         "Cannot resolve the provider method because 'insert' not found in SqlProvider 'org.apache.ibatis.submitted.sqlprovider.ProviderMethodResolutionTest$DefaultProvideMethodResolverMethodNameMatchedMethodIsNoneMapper$MethodResolverBasedSqlProvider'.",
-        e.getMessage());
+        e.getCause().getMessage());
   }
 
   @Test
   void shouldErrorWhenDefaultResolverReturnTypeMatchedMethodIsNone() {
-    BuilderException e = Assertions.assertThrows(BuilderException.class, () -> sqlSessionFactory.getConfiguration()
-        .addMapper(DefaultProvideMethodResolverReturnTypeMatchedMethodIsNoneMapper.class));
+    BuilderException e = Assertions.assertThrows(BuilderException.class,
+        () -> sqlSessionFactory.getConfiguration().addMapper(DefaultProvideMethodResolverReturnTypeMatchedMethodIsNoneMapper.class));
     assertEquals(
         "Cannot resolve the provider method because 'insert' does not return the CharSequence or its subclass in SqlProvider 'org.apache.ibatis.submitted.sqlprovider.ProviderMethodResolutionTest$DefaultProvideMethodResolverReturnTypeMatchedMethodIsNoneMapper$MethodResolverBasedSqlProvider'.",
-        e.getMessage());
+        e.getCause().getMessage());
   }
 
   @Test
   void shouldErrorWhenDefaultResolverMatchedMethodIsMultiple() {
-    BuilderException e = Assertions.assertThrows(BuilderException.class, () -> sqlSessionFactory.getConfiguration()
-        .addMapper(DefaultProvideMethodResolverMatchedMethodIsMultipleMapper.class));
+    BuilderException e = Assertions.assertThrows(BuilderException.class,
+        () -> sqlSessionFactory.getConfiguration().addMapper(DefaultProvideMethodResolverMatchedMethodIsMultipleMapper.class));
     assertEquals(
         "Cannot resolve the provider method because 'update' is found multiple in SqlProvider 'org.apache.ibatis.submitted.sqlprovider.ProviderMethodResolutionTest$DefaultProvideMethodResolverMatchedMethodIsMultipleMapper$MethodResolverBasedSqlProvider'.",
-        e.getMessage());
+        e.getCause().getMessage());
   }
 
   @Test
@@ -129,7 +130,7 @@ class ProviderMethodResolutionTest {
         () -> sqlSessionFactory.getConfiguration().addMapper(ReservedNameMethodIsNoneMapper.class));
     assertEquals(
         "Error creating SqlSource for SqlProvider. Method 'provideSql' not found in SqlProvider 'org.apache.ibatis.submitted.sqlprovider.ProviderMethodResolutionTest$ReservedNameMethodIsNoneMapper$SqlProvider'.",
-        e.getMessage());
+        e.getCause().getMessage());
   }
 
   interface ProvideMethodResolverMapper {
@@ -155,8 +156,7 @@ class ProviderMethodResolutionTest {
       }
 
       public static String select2() {
-        throw new IllegalStateException(
-            "This method should not called when specify `method` attribute on @SelectProvider.");
+        throw new IllegalStateException("This method should not called when specify `method` attribute on @SelectProvider.");
       }
 
       public static String provideSelect2Sql() {
@@ -167,9 +167,6 @@ class ProviderMethodResolutionTest {
     class ReservedMethodNameBasedSqlProvider {
       public static String provideSql() {
         return "DELETE FROM memos WHERE id = 1";
-      }
-
-      private ReservedMethodNameBasedSqlProvider() {
       }
     }
 
@@ -190,7 +187,8 @@ class ProviderMethodResolutionTest {
     default Method resolveMethod(ProviderContext context) {
       List<Method> targetMethods = Arrays.stream(getClass().getMethods())
           .filter(m -> m.getName().equals(context.getMapperMethod().getName() + "Sql"))
-          .filter(m -> CharSequence.class.isAssignableFrom(m.getReturnType())).collect(Collectors.toList());
+          .filter(m -> CharSequence.class.isAssignableFrom(m.getReturnType()))
+          .collect(Collectors.toList());
       if (targetMethods.size() == 1) {
         return targetMethods.get(0);
       }
@@ -249,9 +247,6 @@ class ProviderMethodResolutionTest {
     class SqlProvider {
       public static String select() {
         return "SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS";
-      }
-
-      private SqlProvider() {
       }
     }
 

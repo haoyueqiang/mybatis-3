@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,17 @@
 package org.apache.ibatis.submitted.dynsql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.apache.ibatis.BaseDataTest;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeHandler;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -29,17 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.BaseDataTest;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.TypeHandler;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 class DynSqlTest {
 
   protected static SqlSessionFactory sqlSessionFactory;
@@ -51,7 +51,7 @@ class DynSqlTest {
     }
 
     BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-        "org/apache/ibatis/submitted/dynsql/CreateDB.sql");
+            "org/apache/ibatis/submitted/dynsql/CreateDB.sql");
   }
 
   @Test
@@ -84,8 +84,7 @@ class DynSqlTest {
       parameter.setSchema("ibtest");
       parameter.setIds(ids);
 
-      List<Map<String, Object>> answer = sqlSession.selectList("org.apache.ibatis.submitted.dynsql.select_simple",
-          parameter);
+      List<Map<String, Object>> answer = sqlSession.selectList("org.apache.ibatis.submitted.dynsql.select_simple", parameter);
 
       assertEquals(3, answer.size());
     }
@@ -127,8 +126,7 @@ class DynSqlTest {
   @Test
   void testOgnlStaticMethodCall() {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      List<Map<String, Object>> answer = sqlSession
-          .selectList("org.apache.ibatis.submitted.dynsql.ognlStaticMethodCall", "Rock 'n Roll");
+      List<Map<String, Object>> answer = sqlSession.selectList("org.apache.ibatis.submitted.dynsql.ognlStaticMethodCall", "Rock 'n Roll");
       assertEquals(1, answer.size());
       assertEquals(7, answer.get(0).get("ID"));
     }
@@ -144,9 +142,8 @@ class DynSqlTest {
   }
 
   /**
-   * Verify that can specify any variable name for parameter object when parameter is value object that a type handler
-   * exists.
-   * <p>
+   * Verify that can specify any variable name for parameter object when parameter is value object that a type handler exists.
+   *
    * https://github.com/mybatis/mybatis-3/issues/1486
    */
   @Test
@@ -184,9 +181,7 @@ class DynSqlTest {
       try {
         mapper.selectDescriptionByConditions2(conditions);
       } catch (PersistenceException e) {
-        assertEquals(
-            "There is no getter for property named 'conditions' in 'class org.apache.ibatis.submitted.dynsql.DynSqlMapper$Conditions'",
-            e.getCause().getMessage());
+        assertEquals("There is no getter for property named 'conditions' in 'class org.apache.ibatis.submitted.dynsql.DynSqlMapper$Conditions'", e.getCause().getMessage());
       }
       assertEquals(7, mapper.selectDescriptionByConditions2(null).size());
     }
@@ -197,9 +192,7 @@ class DynSqlTest {
       try {
         mapper.selectDescriptionByConditions3(conditions);
       } catch (PersistenceException e) {
-        assertEquals(
-            "There is no getter for property named 'conditions' in 'class org.apache.ibatis.submitted.dynsql.DynSqlMapper$Conditions'",
-            e.getCause().getMessage());
+        assertEquals("There is no getter for property named 'conditions' in 'class org.apache.ibatis.submitted.dynsql.DynSqlMapper$Conditions'", e.getCause().getMessage());
       }
       assertEquals(7, mapper.selectDescriptionByConditions3(null).size());
     }
@@ -215,33 +208,28 @@ class DynSqlTest {
     try (Reader configReader = Resources.getResourceAsReader("org/apache/ibatis/submitted/dynsql/MapperConfig.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(configReader);
       // register type handler for the user defined class (= value object)
-      sqlSessionFactory.getConfiguration().getTypeHandlerRegistry().register(DynSqlMapper.Conditions.class,
-          new TypeHandler<DynSqlMapper.Conditions>() {
-            @Override
-            public void setParameter(PreparedStatement ps, int i, DynSqlMapper.Conditions parameter, JdbcType jdbcType)
-                throws SQLException {
-              if (parameter.getId() != null) {
-                ps.setInt(i, parameter.getId());
-              } else {
-                ps.setNull(i, JdbcType.INTEGER.TYPE_CODE);
-              }
-            }
-
-            @Override
-            public DynSqlMapper.Conditions getResult(ResultSet rs, String columnName) throws SQLException {
-              return null;
-            }
-
-            @Override
-            public DynSqlMapper.Conditions getResult(ResultSet rs, int columnIndex) throws SQLException {
-              return null;
-            }
-
-            @Override
-            public DynSqlMapper.Conditions getResult(CallableStatement cs, int columnIndex) throws SQLException {
-              return null;
-            }
-          });
+      sqlSessionFactory.getConfiguration().getTypeHandlerRegistry().register(DynSqlMapper.Conditions.class, new TypeHandler<DynSqlMapper.Conditions>() {
+        @Override
+        public void setParameter(PreparedStatement ps, int i, DynSqlMapper.Conditions parameter, JdbcType jdbcType) throws SQLException {
+          if (parameter.getId() != null) {
+            ps.setInt(i, parameter.getId());
+          } else {
+            ps.setNull(i, JdbcType.INTEGER.TYPE_CODE);
+          }
+        }
+        @Override
+        public DynSqlMapper.Conditions getResult(ResultSet rs, String columnName) throws SQLException {
+          return null;
+        }
+        @Override
+        public DynSqlMapper.Conditions getResult(ResultSet rs, int columnIndex) throws SQLException {
+          return null;
+        }
+        @Override
+        public DynSqlMapper.Conditions getResult(CallableStatement cs, int columnIndex) throws SQLException {
+          return null;
+        }
+      });
     }
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       DynSqlMapper mapper = sqlSession.getMapper(DynSqlMapper.class);

@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,24 +17,23 @@ package org.apache.ibatis.parsing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.io.Resources;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
+import org.xml.sax.*;
 
 class XPathParserTest {
-  private final String resource = "nodelet_test.xml";
+  private String resource = "resources/nodelet_test.xml";
 
-  // InputStream Source
+  //InputStream Source
   @Test
   void constructorWithInputStreamValidationVariablesEntityResolver() throws Exception {
 
@@ -68,7 +67,7 @@ class XPathParserTest {
     }
   }
 
-  // Reader Source
+  //Reader Source
   @Test
   void constructorWithReaderValidationVariablesEntityResolver() throws Exception {
 
@@ -102,7 +101,7 @@ class XPathParserTest {
     }
   }
 
-  // Xml String Source
+  //Xml String Source
   @Test
   void constructorWithStringValidationVariablesEntityResolver() throws Exception {
     XPathParser parser = new XPathParser(getXmlString(resource), false, null, null);
@@ -127,7 +126,7 @@ class XPathParserTest {
     testEvalMethod(parser);
   }
 
-  // Document Source
+  //Document Source
   @Test
   void constructorWithDocumentValidationVariablesEntityResolver() {
     XPathParser parser = new XPathParser(getDocument(resource), false, null, null);
@@ -162,7 +161,7 @@ class XPathParserTest {
       factory.setCoalescing(false);
       factory.setExpandEntityReferences(true);
       DocumentBuilder builder = factory.newDocumentBuilder();
-      return builder.parse(inputSource);// already closed resource in builder.parse method
+      return builder.parse(inputSource);//already closed resource in builder.parse method
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);
     }
@@ -179,32 +178,15 @@ class XPathParserTest {
     }
   }
 
-  enum EnumTest {
-    YES, NO
-  }
-
   private void testEvalMethod(XPathParser parser) {
     assertEquals((Long) 1970L, parser.evalLong("/employee/birth_date/year"));
-    assertEquals((Long) 1970L, parser.evalNode("/employee/birth_date/year").getLongBody());
     assertEquals((short) 6, (short) parser.evalShort("/employee/birth_date/month"));
     assertEquals((Integer) 15, parser.evalInteger("/employee/birth_date/day"));
-    assertEquals((Integer) 15, parser.evalNode("/employee/birth_date/day").getIntBody());
     assertEquals((Float) 5.8f, parser.evalFloat("/employee/height"));
-    assertEquals((Float) 5.8f, parser.evalNode("/employee/height").getFloatBody());
     assertEquals((Double) 5.8d, parser.evalDouble("/employee/height"));
-    assertEquals((Double) 5.8d, parser.evalNode("/employee/height").getDoubleBody());
-    assertEquals((Double) 5.8d, parser.evalNode("/employee").evalDouble("height"));
     assertEquals("${id_var}", parser.evalString("/employee/@id"));
-    assertEquals("${id_var}", parser.evalNode("/employee/@id").getStringBody());
-    assertEquals("${id_var}", parser.evalNode("/employee").evalString("@id"));
     assertEquals(Boolean.TRUE, parser.evalBoolean("/employee/active"));
-    assertEquals(Boolean.TRUE, parser.evalNode("/employee/active").getBooleanBody());
-    assertEquals(Boolean.TRUE, parser.evalNode("/employee").evalBoolean("active"));
-    assertEquals(EnumTest.YES, parser.evalNode("/employee/active").getEnumAttribute(EnumTest.class, "bot"));
-    assertEquals((Float) 3.2f, parser.evalNode("/employee/active").getFloatAttribute("score"));
-    assertEquals((Double) 3.2d, parser.evalNode("/employee/active").getDoubleAttribute("score"));
-
-    assertEquals("<id>\n  ${id_var}\n</id>", parser.evalNode("/employee/@id").toString().trim());
+    assertEquals("<id>${id_var}</id>", parser.evalNode("/employee/@id").toString().trim());
     assertEquals(7, parser.evalNodes("/employee/*").size());
     XNode node = parser.evalNode("/employee/height");
     assertEquals("employee/height", node.getPath());

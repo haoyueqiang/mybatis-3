@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,105 +13,57 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.apache.ibatis.reflection.wrapper;
 
 import java.util.List;
 
-import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.MetaObject;
-import org.apache.ibatis.reflection.ReflectorFactory;
 import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
- * 对象包装器接口，基于 MetaClass 工具类，定义对指定对象的各种操作。或者可以说，ObjectWrapper 是 MetaClass 的指定类的具象化。
- *
  * @author Clinton Begin
+ * 对象或者对象集合的包装器
  */
 public interface ObjectWrapper {
 
-    /**
-     * 获得值
-     *
-     * @param prop PropertyTokenizer 对象，相当于键
-     * @return 值
-     */
-    Object get(PropertyTokenizer prop);
+  // get一个属性的值
+  Object get(PropertyTokenizer prop);
 
-    /**
-     * 设置值
-     *
-     * @param prop  PropertyTokenizer 对象，相当于键
-     * @param value 值
-     */
-    void set(PropertyTokenizer prop, Object value);
+  // set一个属性的值
+  void set(PropertyTokenizer prop, Object value);
 
-    /**
-     * {@link org.apache.ibatis.reflection.MetaClass#findProperty(String, boolean)}
-     */
-    String findProperty(String name, boolean useCamelCaseMapping);
+  // 找到指定属性
+  String findProperty(String name, boolean useCamelCaseMapping);
 
-    /**
-     * {@link MetaClass#getGetterNames()}
-     *
-     * @return
-     */
-    String[] getGetterNames();
+  // 获得getter列表
+  String[] getGetterNames();
 
-    /**
-     * ${@link MetaClass#getSetterNames()}
-     *
-     * @return
-     */
-    String[] getSetterNames();
+  // 获得setter列表
+  String[] getSetterNames();
 
-    /**
-     * 获得 setting 方法的方法参数类型
-     * {@link MetaClass#getSetterType(String)}
-     *
-     * @param name
-     * @return
-     */
-    Class<?> getSetterType(String name);
+  // 获得getter的类型
+  Class<?> getSetterType(String name);
 
-    /**
-     * 获得指定属性的 getting 方法的返回值
-     * {@link MetaClass#getGetterType(PropertyTokenizer)}
-     *
-     * @param name
-     * @return
-     */
-    Class<?> getGetterType(String name);
+  // 获得setter的类型
+  Class<?> getGetterType(String name);
 
-    /**
-     * {@link MetaClass#hasSetter(String)}
-     */
-    boolean hasSetter(String name);
+  // 查看指定属性是否有setter
+  boolean hasSetter(String name);
 
-    /**
-     * {@link MetaClass#hasGetter(String)}
-     */
-    boolean hasGetter(String name);
+  // 查看指定属性是否有getter
+  boolean hasGetter(String name);
 
-    /**
-     * {@link MetaObject#forObject(Object, ObjectFactory, ObjectWrapperFactory, ReflectorFactory)}
-     */
-    MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
+  // 生成一个属性的实例
+  MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
 
-    /**
-     * 是否为集合
-     */
-    boolean isCollection();
+  // 判断是否是集合
+  boolean isCollection();
 
-    /**
-     * 添加元素到集合
-     */
-    void add(Object element);
+  // 添加元素
+  void add(Object element);
 
-    /**
-     * 添加多个元素到集合
-     */
-    <E> void addAll(List<E> element);
+  // 添加全部元素
+  <E> void addAll(List<E> element);
 
 }

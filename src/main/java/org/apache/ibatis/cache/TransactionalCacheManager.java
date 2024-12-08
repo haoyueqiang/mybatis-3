@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.ibatis.cache.decorators.TransactionalCache;
-import org.apache.ibatis.util.MapUtil;
 
 /**
  * @author Clinton Begin
  */
 public class TransactionalCacheManager {
 
+  // 管理多个缓存的映射
   private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<>();
 
   public void clear(Cache cache) {
@@ -40,12 +40,18 @@ public class TransactionalCacheManager {
     getTransactionalCache(cache).putObject(key, value);
   }
 
+  /**
+   * 事务提交
+   */
   public void commit() {
     for (TransactionalCache txCache : transactionalCaches.values()) {
       txCache.commit();
     }
   }
 
+  /**
+   * 事务回滚
+   */
   public void rollback() {
     for (TransactionalCache txCache : transactionalCaches.values()) {
       txCache.rollback();
@@ -53,7 +59,7 @@ public class TransactionalCacheManager {
   }
 
   private TransactionalCache getTransactionalCache(Cache cache) {
-    return MapUtil.computeIfAbsent(transactionalCaches, cache, TransactionalCache::new);
+    return transactionalCaches.computeIfAbsent(cache, TransactionalCache::new);
   }
 
 }

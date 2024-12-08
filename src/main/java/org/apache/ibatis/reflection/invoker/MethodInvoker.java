@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,24 +21,30 @@ import java.lang.reflect.Method;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
- * org.apache.ibatis.reflection.invoker.MethodInvoker ，实现 Invoker 接口，指定方法的调用器。代码如下：
  * @author Clinton Begin
  */
 public class MethodInvoker implements Invoker {
 
+  // 传入参数或者传出参数类型
   private final Class<?> type;
   private final Method method;
 
+  /**
+   * MethodInvoker构造方法
+   * @param method 方法
+   */
   public MethodInvoker(Method method) {
     this.method = method;
 
     if (method.getParameterTypes().length == 1) {
+      // 有且只有一个入参时，这里放入入参
       type = method.getParameterTypes()[0];
     } else {
       type = method.getReturnType();
     }
   }
 
+  // 执行函数
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
     try {
@@ -47,14 +53,12 @@ public class MethodInvoker implements Invoker {
       if (Reflector.canControlMemberAccessible()) {
         method.setAccessible(true);
         return method.invoke(target, args);
+      } else {
+        throw e;
       }
-      throw e;
     }
   }
 
-  /**
-   * @return 返回属性类型
-   */
   @Override
   public Class<?> getType() {
     return type;

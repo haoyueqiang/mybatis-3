@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,15 +34,23 @@ import org.apache.ibatis.reflection.ExceptionUtil;
  */
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
+  // 构造方法中传入的SqlSessionFactory对象
   private final SqlSessionFactory sqlSessionFactory;
+  // 在构造方法中创建的SqlSession代理对象
   private final SqlSession sqlSessionProxy;
-
+  // 该变量用来存储被代理的SqlSession对象
   private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<>();
 
+  /**
+   * SqlSessionManager构造方法
+   * @param sqlSessionFactory SqlSession工厂
+   */
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {
     this.sqlSessionFactory = sqlSessionFactory;
-    this.sqlSessionProxy = (SqlSession) Proxy.newProxyInstance(SqlSessionFactory.class.getClassLoader(),
-        new Class[] { SqlSession.class }, new SqlSessionInterceptor());
+    this.sqlSessionProxy = (SqlSession) Proxy.newProxyInstance(
+        SqlSessionFactory.class.getClassLoader(),
+        new Class[]{SqlSession.class},
+        new SqlSessionInterceptor());
   }
 
   public static SqlSessionManager newInstance(Reader reader) {
@@ -331,33 +339,38 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
     try {
       sqlSession.close();
     } finally {
-      localSqlSession.remove();
+      localSqlSession.set(null);
     }
   }
 
   private class SqlSessionInterceptor implements InvocationHandler {
     public SqlSessionInterceptor() {
-      // Prevent Synthetic Access
+        // Prevent Synthetic Access
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      // 尝试从当前线程中取出SqlSession对象
       final SqlSession sqlSession = SqlSessionManager.this.localSqlSession.get();
-      if (sqlSession != null) {
+      if (sqlSession != null) { // 当前线程中确实取出了SqlSession对象
         try {
+          // 使用取出的SqlSession对象进行操作
           return method.invoke(sqlSession, args);
         } catch (Throwable t) {
           throw ExceptionUtil.unwrapThrowable(t);
         }
-      }
-      try (SqlSession autoSqlSession = openSession()) {
-        try {
-          final Object result = method.invoke(autoSqlSession, args);
-          autoSqlSession.commit();
-          return result;
-        } catch (Throwable t) {
-          autoSqlSession.rollback();
-          throw ExceptionUtil.unwrapThrowable(t);
+      } else { // 当前线程中还没有SqlSession对象
+        // 使用属性中的SqlSessionFactory对象创建一个SqlSession对象
+        try (SqlSession autoSqlSession = openSession()) {
+          try {
+            // 使用新创建的SqlSession对象进行操作
+            final Object result = method.invoke(autoSqlSession, args);
+            autoSqlSession.commit();
+            return result;
+          } catch (Throwable t) {
+            autoSqlSession.rollback();
+            throw ExceptionUtil.unwrapThrowable(t);
+          }
         }
       }
     }

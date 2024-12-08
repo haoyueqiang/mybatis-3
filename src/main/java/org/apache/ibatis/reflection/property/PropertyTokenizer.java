@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,38 +19,27 @@ import java.util.Iterator;
 
 /**
  * @author Clinton Begin
+ * 属性标记器
+ */
+
+/**
+ * 假设传入的为student[sId].name
+ * 则各个属性得到以下结果
  *
- * org.apache.ibatis.reflection.property.PropertyTokenizer ，实现 Iterator 接口，属性分词器，支持迭代器的访问方式。
- *
- * 举个例子，在访问 "order[0].item[0].name" 时，我们希望拆分成 "order[0]"、"item[0]"、"name" 三段，那么就可以通过 PropertyTokenizer 来实现。
+ * 该属性标记器只能处理一级，即点后面的都作为children
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
 
-  /**
-   * 当前字符串
-   */
+  // student
   private String name;
-
-  /**
-   * 索引的 {@link #name} ，因为 {@link #name} 如果存在 {@link #index} 会被更改
-   */
+  // student[sId]
   private final String indexedName;
-
-  /**
-   * 编号。
-   *
-   * 对于数组 name[0] ，则 index = 0
-   * 对于 Map map[key] ，则 index = key
-   */
+  // sId
   private String index;
-
-  /**
-   * 剩余字符串
-   */
+  // name
   private final String children;
 
   public PropertyTokenizer(String fullname) {
-    // <1> 初始化 name、children 字符串，使用 . 作为分隔
     int delim = fullname.indexOf('.');
     if (delim > -1) {
       name = fullname.substring(0, delim);
@@ -59,10 +48,7 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
       name = fullname;
       children = null;
     }
-    // <2> 记录当前 name
     indexedName = name;
-
-    // 若存在 [ ，则获得 index ，并修改 name 。
     delim = name.indexOf('[');
     if (delim > -1) {
       index = name.substring(delim + 1, name.length() - 1);
@@ -91,7 +77,6 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
     return children != null;
   }
 
-  //#next() 方法，迭代获得下一个 PropertyTokenizer 对象。代码如下：
   @Override
   public PropertyTokenizer next() {
     return new PropertyTokenizer(children);
@@ -99,7 +84,6 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
 
   @Override
   public void remove() {
-    throw new UnsupportedOperationException(
-        "Remove is not supported, as it has no meaning in the context of properties.");
+    throw new UnsupportedOperationException("Remove is not supported, as it has no meaning in the context of properties.");
   }
 }

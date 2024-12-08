@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +15,15 @@
  */
 package org.apache.ibatis.type;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.time.Year;
 
 import org.junit.jupiter.api.Test;
 
 /**
+ *
  * @author Eduardo Macarron
  */
 class YearTypeHandlerTest extends BaseTypeHandlerTest {
@@ -42,8 +41,10 @@ class YearTypeHandlerTest extends BaseTypeHandlerTest {
   @Override
   @Test
   public void shouldGetResultFromResultSetByName() throws Exception {
-    when(rs.getInt("column")).thenReturn(INSTANT.getValue(), 0);
+    when(rs.getInt("column")).thenReturn(INSTANT.getValue());
     assertEquals(INSTANT, TYPE_HANDLER.getResult(rs, "column"));
+
+    when(rs.getInt("column")).thenReturn(0);
     assertEquals(Year.of(0), TYPE_HANDLER.getResult(rs, "column"));
   }
 
@@ -58,8 +59,10 @@ class YearTypeHandlerTest extends BaseTypeHandlerTest {
   @Override
   @Test
   public void shouldGetResultFromResultSetByPosition() throws Exception {
-    when(rs.getInt(1)).thenReturn(INSTANT.getValue(), 0);
+    when(rs.getInt(1)).thenReturn(INSTANT.getValue());
     assertEquals(INSTANT, TYPE_HANDLER.getResult(rs, 1));
+
+    when(rs.getInt(1)).thenReturn(0);
     assertEquals(Year.of(0), TYPE_HANDLER.getResult(rs, 1));
   }
 
@@ -74,8 +77,10 @@ class YearTypeHandlerTest extends BaseTypeHandlerTest {
   @Override
   @Test
   public void shouldGetResultFromCallableStatement() throws Exception {
-    when(cs.getInt(1)).thenReturn(INSTANT.getValue(), 0);
+    when(cs.getInt(1)).thenReturn(INSTANT.getValue());
     assertEquals(INSTANT, TYPE_HANDLER.getResult(cs, 1));
+
+    when(cs.getInt(1)).thenReturn(0);
     assertEquals(Year.of(0), TYPE_HANDLER.getResult(cs, 1));
   }
 

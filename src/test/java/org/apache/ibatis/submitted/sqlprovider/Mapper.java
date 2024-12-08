@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,9 @@ package org.apache.ibatis.submitted.sqlprovider;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
@@ -51,8 +51,7 @@ public interface Mapper extends BaseMapper<User> {
   List<User> getUsersByNameUsingMap(String name, String orderByColumn);
 
   @SelectProvider(type = OurSqlBuilder.class, method = "buildGetUsersByNameWithParamNameAndOrderByQuery")
-  List<User> getUsersByNameWithParamNameAndOrderBy(@Param("name") String name,
-      @Param("orderByColumn") String orderByColumn);
+  List<User> getUsersByNameWithParamNameAndOrderBy(@Param("name") String name, @Param("orderByColumn") String orderByColumn);
 
   @SelectProvider(type = OurSqlBuilder.class, method = "buildGetUsersByNameWithParamNameQuery")
   List<User> getUsersByNameWithParamName(@Param("name") String name);
@@ -60,10 +59,10 @@ public interface Mapper extends BaseMapper<User> {
   @InsertProvider(type = OurSqlBuilder.class, method = "buildInsert")
   void insert(User user);
 
-  @UpdateProvider(type = OurSqlBuilder.class, method = "buildUpdate")
+  @UpdateProvider(type= OurSqlBuilder.class, method= "buildUpdate")
   void update(User user);
 
-  @DeleteProvider(type = OurSqlBuilder.class, method = "buildDelete")
+  @DeleteProvider(type= OurSqlBuilder.class, method= "buildDelete")
   void delete(Integer id);
 
 }

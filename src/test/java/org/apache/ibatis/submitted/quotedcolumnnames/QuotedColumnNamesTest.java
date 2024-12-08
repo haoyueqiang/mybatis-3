@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2022 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,20 +34,18 @@ class QuotedColumnNamesTest {
 
   @BeforeAll
   static void setUp() throws Exception {
-    try (Reader reader = Resources
-        .getResourceAsReader("org/apache/ibatis/submitted/quotedcolumnnames/MapperConfig.xml")) {
+    try (Reader reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/quotedcolumnnames/MapperConfig.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
     }
 
     BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-        "org/apache/ibatis/submitted/quotedcolumnnames/CreateDB.sql");
+            "org/apache/ibatis/submitted/quotedcolumnnames/CreateDB.sql");
   }
 
   @Test
   void testIt() {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      List<Map<String, Object>> list = sqlSession
-          .selectList("org.apache.ibatis.submitted.quotedcolumnnames.Map.doSelect");
+      List<Map<String, Object>> list = sqlSession.selectList("org.apache.ibatis.submitted.quotedcolumnnames.Map.doSelect");
       printList(list);
       assertColumnNames(list);
     }
@@ -56,8 +54,7 @@ class QuotedColumnNamesTest {
   @Test
   void testItWithResultMap() {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      List<Map<String, Object>> list = sqlSession
-          .selectList("org.apache.ibatis.submitted.quotedcolumnnames.Map.doSelectWithResultMap");
+      List<Map<String, Object>> list = sqlSession.selectList("org.apache.ibatis.submitted.quotedcolumnnames.Map.doSelectWithResultMap");
       printList(list);
       assertColumnNames(list);
     }

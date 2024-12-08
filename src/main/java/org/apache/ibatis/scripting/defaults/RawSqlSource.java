@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,14 +26,15 @@ import org.apache.ibatis.scripting.xmltags.SqlNode;
 import org.apache.ibatis.session.Configuration;
 
 /**
- * Static SqlSource. It is faster than {@link DynamicSqlSource} because mappings are calculated during startup.
+ * Static SqlSource. It is faster than {@link DynamicSqlSource} because mappings are
+ * calculated during startup.
  *
  * @since 3.2.0
- *
  * @author Eduardo Macarron
  */
 public class RawSqlSource implements SqlSource {
 
+  // StaticSqlSource对象
   private final SqlSource sqlSource;
 
   public RawSqlSource(Configuration configuration, SqlNode rootSqlNode, Class<?> parameterType) {
@@ -43,6 +44,7 @@ public class RawSqlSource implements SqlSource {
   public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> clazz = parameterType == null ? Object.class : parameterType;
+    // 处理RawSqlSource中的“#{}”占位符，得到StaticSqlSource
     sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<>());
   }
 
@@ -54,6 +56,7 @@ public class RawSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    // BoundSql对象由sqlSource属性持有的StaticSqlSource对象返回
     return sqlSource.getBoundSql(parameterObject);
   }
 

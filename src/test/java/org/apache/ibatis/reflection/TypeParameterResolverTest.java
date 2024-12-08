@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +15,7 @@
  */
 package org.apache.ibatis.reflection;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -27,9 +26,6 @@ import java.lang.reflect.WildcardType;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.ibatis.reflection.typeparam.Calculator;
 import org.apache.ibatis.reflection.typeparam.Calculator.SubCalculator;
@@ -262,19 +258,6 @@ class TypeParameterResolverTest {
   }
 
   @Test
-  void testReturn_LV1Map() throws Exception {
-    Class<?> clazz = Level1Mapper.class;
-    Method method = clazz.getMethod("selectMap");
-    Type result = TypeParameterResolver.resolveReturnType(method, clazz);
-    assertTrue(result instanceof ParameterizedType);
-    ParameterizedType paramType = (ParameterizedType) result;
-    assertEquals(Map.class, paramType.getRawType());
-    assertEquals(2, paramType.getActualTypeArguments().length);
-    assertEquals(String.class, paramType.getActualTypeArguments()[0]);
-    assertEquals(Object.class, paramType.getActualTypeArguments()[1]);
-  }
-
-  @Test
   void testReturn_LV2Map() throws Exception {
     Class<?> clazz = Level2Mapper.class;
     Method method = clazz.getMethod("selectMap");
@@ -434,50 +417,16 @@ class TypeParameterResolverTest {
     @SuppressWarnings("unused")
     abstract class A<S> {
       protected S id;
-
-      public S getId() {
-        return this.id;
-      }
-
-      public void setId(S id) {
-        this.id = id;
-      }
+      public S getId() { return this.id;}
+      public void setId(S id) {this.id = id;}
     }
-    abstract class B<T> extends A<T> {
-    }
-    abstract class C<U> extends B<U> {
-    }
-    class D extends C<Integer> {
-    }
+    abstract class B<T> extends A<T> {}
+    abstract class C<U> extends B<U> {}
+    class D extends C<Integer> {}
     Class<?> clazz = D.class;
     Method method = clazz.getMethod("getId");
     assertEquals(Integer.class, TypeParameterResolver.resolveReturnType(method, clazz));
     Field field = A.class.getDeclaredField("id");
     assertEquals(Integer.class, TypeParameterResolver.resolveFieldType(field, clazz));
   }
-
-  @Test
-  void shouldTypeVariablesBeComparedWithEquals() throws Exception {
-    // #1794
-    ExecutorService executor = Executors.newFixedThreadPool(2);
-    Future<Type> futureA = executor.submit(() -> {
-      Type retType = TypeParameterResolver.resolveReturnType(IfaceA.class.getMethods()[0], IfaceA.class);
-      return ((ParameterizedType) retType).getActualTypeArguments()[0];
-    });
-    Future<Type> futureB = executor.submit(() -> {
-      Type retType = TypeParameterResolver.resolveReturnType(IfaceB.class.getMethods()[0], IfaceB.class);
-      return ((ParameterizedType) retType).getActualTypeArguments()[0];
-    });
-    assertEquals(AA.class, futureA.get());
-    assertEquals(BB.class, futureB.get());
-    executor.shutdown();
-  }
-
-  // @formatter:off
-  class AA {}
-  class BB {}
-  interface IfaceA extends ParentIface<AA> {}
-  interface IfaceB extends ParentIface<BB> {}
-  interface ParentIface<T> {List<T> m();}
-  // @formatter:on
 }

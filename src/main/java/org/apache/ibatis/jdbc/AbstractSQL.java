@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,7 @@ package org.apache.ibatis.jdbc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 /**
  * @author Clinton Begin
@@ -50,13 +47,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Sets the.
-   *
-   * @param sets
-   *          the sets
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T SET(String... sets) {
@@ -77,13 +67,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Into columns.
-   *
-   * @param columns
-   *          the columns
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T INTO_COLUMNS(String... columns) {
@@ -92,35 +75,35 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Into values.
-   *
-   * @param values
-   *          the values
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T INTO_VALUES(String... values) {
     List<String> list = sql().valuesList.get(sql().valuesList.size() - 1);
-    Collections.addAll(list, values);
+    for (String value : values) {
+      list.add(value);
+    }
     return getSelf();
   }
 
+  /**
+   * 进行SELECT的操作
+   *
+   * @param columns SELECT操作的列表
+   * @return 整个对象自身。return自身创造了一种类似于建造者模式的形态，可以级联操作，例如：this.SELECT().WHERE()
+   *
+   * 对象自身包括内部的SafeAppendable【静态类】
+   * 在SafeAppendable的属性中存储了：
+   *  - 操作的类型
+   *  - 操作的元素列表
+   */
   public T SELECT(String columns) {
+    // 调用该方法表明了是SELECT操作，传入的是SELECT操作对应的LIST
     sql().statementType = SQLStatement.StatementType.SELECT;
     sql().select.add(columns);
     return getSelf();
   }
 
   /**
-   * Select.
-   *
-   * @param columns
-   *          the columns
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T SELECT(String... columns) {
@@ -136,13 +119,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Select distinct.
-   *
-   * @param columns
-   *          the columns
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T SELECT_DISTINCT(String... columns) {
@@ -163,13 +139,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * From.
-   *
-   * @param tables
-   *          the tables
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T FROM(String... tables) {
@@ -183,13 +152,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Join.
-   *
-   * @param joins
-   *          the joins
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T JOIN(String... joins) {
@@ -203,13 +165,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Inner join.
-   *
-   * @param joins
-   *          the joins
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T INNER_JOIN(String... joins) {
@@ -223,13 +178,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Left outer join.
-   *
-   * @param joins
-   *          the joins
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T LEFT_OUTER_JOIN(String... joins) {
@@ -243,13 +191,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Right outer join.
-   *
-   * @param joins
-   *          the joins
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T RIGHT_OUTER_JOIN(String... joins) {
@@ -263,13 +204,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Outer join.
-   *
-   * @param joins
-   *          the joins
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T OUTER_JOIN(String... joins) {
@@ -284,13 +218,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Where.
-   *
-   * @param conditions
-   *          the conditions
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T WHERE(String... conditions) {
@@ -315,13 +242,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Group by.
-   *
-   * @param columns
-   *          the columns
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T GROUP_BY(String... columns) {
@@ -336,13 +256,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Having.
-   *
-   * @param conditions
-   *          the conditions
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T HAVING(String... conditions) {
@@ -357,13 +270,6 @@ public abstract class AbstractSQL<T> {
   }
 
   /**
-   * Order by.
-   *
-   * @param columns
-   *          the columns
-   *
-   * @return the t
-   *
    * @since 3.4.2
    */
   public T ORDER_BY(String... columns) {
@@ -374,13 +280,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the limit variable string(e.g. {@code "#{limit}"}).
    *
-   * @param variable
-   *          a limit variable string
-   *
+   * @param variable a limit variable string
    * @return a self instance
-   *
    * @see #OFFSET(String)
-   *
    * @since 3.5.2
    */
   public T LIMIT(String variable) {
@@ -392,13 +294,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the limit value.
    *
-   * @param value
-   *          an offset value
-   *
+   * @param value an offset value
    * @return a self instance
-   *
    * @see #OFFSET(long)
-   *
    * @since 3.5.2
    */
   public T LIMIT(int value) {
@@ -408,13 +306,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the offset variable string(e.g. {@code "#{offset}"}).
    *
-   * @param variable
-   *          a offset variable string
-   *
+   * @param variable a offset variable string
    * @return a self instance
-   *
    * @see #LIMIT(String)
-   *
    * @since 3.5.2
    */
   public T OFFSET(String variable) {
@@ -426,13 +320,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the offset value.
    *
-   * @param value
-   *          an offset value
-   *
+   * @param value an offset value
    * @return a self instance
-   *
    * @see #LIMIT(int)
-   *
    * @since 3.5.2
    */
   public T OFFSET(long value) {
@@ -442,13 +332,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the fetch first rows variable string(e.g. {@code "#{fetchFirstRows}"}).
    *
-   * @param variable
-   *          a fetch first rows variable string
-   *
+   * @param variable a fetch first rows variable string
    * @return a self instance
-   *
    * @see #OFFSET_ROWS(String)
-   *
    * @since 3.5.2
    */
   public T FETCH_FIRST_ROWS_ONLY(String variable) {
@@ -460,13 +346,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the fetch first rows value.
    *
-   * @param value
-   *          a fetch first rows value
-   *
+   * @param value a fetch first rows value
    * @return a self instance
-   *
    * @see #OFFSET_ROWS(long)
-   *
    * @since 3.5.2
    */
   public T FETCH_FIRST_ROWS_ONLY(int value) {
@@ -476,13 +358,9 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the offset rows variable string(e.g. {@code "#{offset}"}).
    *
-   * @param variable
-   *          a offset rows variable string
-   *
+   * @param variable a offset rows variable string
    * @return a self instance
-   *
    * @see #FETCH_FIRST_ROWS_ONLY(String)
-   *
    * @since 3.5.2
    */
   public T OFFSET_ROWS(String variable) {
@@ -494,23 +372,17 @@ public abstract class AbstractSQL<T> {
   /**
    * Set the offset rows value.
    *
-   * @param value
-   *          an offset rows value
-   *
+   * @param value an offset rows value
    * @return a self instance
-   *
    * @see #FETCH_FIRST_ROWS_ONLY(int)
-   *
    * @since 3.5.2
    */
   public T OFFSET_ROWS(long value) {
     return OFFSET_ROWS(String.valueOf(value));
   }
 
-  /**
+  /*
    * used to add a new inserted row while do multi-row insert.
-   *
-   * @return the t
    *
    * @since 3.5.2
    */
@@ -528,71 +400,6 @@ public abstract class AbstractSQL<T> {
     return a;
   }
 
-  /**
-   * Apply sql phrases that provide by SQL consumer if condition is matches.
-   *
-   * @param applyCondition
-   *          if {@code true} apply sql phrases
-   * @param sqlConsumer
-   *          a consumer that append sql phrase to SQL instance
-   *
-   * @return a self instance
-   *
-   * @see #applyIf(BooleanSupplier, Consumer)
-   *
-   * @since 3.5.15
-   */
-  public T applyIf(boolean applyCondition, Consumer<T> sqlConsumer) {
-    T self = getSelf();
-    if (applyCondition) {
-      sqlConsumer.accept(self);
-    }
-    return self;
-  }
-
-  /**
-   * Apply sql phrases that provide by SQL consumer if condition is matches.
-   *
-   * @param applyConditionSupplier
-   *          if supplier return {@code true} apply sql phrases
-   * @param sqlConsumer
-   *          a consumer that append sql phrase to SQL instance
-   *
-   * @return a self instance
-   *
-   * @see #applyIf(boolean, Consumer)
-   *
-   * @since 3.5.15
-   */
-  public T applyIf(BooleanSupplier applyConditionSupplier, Consumer<T> sqlConsumer) {
-    return applyIf(applyConditionSupplier.getAsBoolean(), sqlConsumer);
-  }
-
-  /**
-   * Apply sql phrases that provide by SQL consumer for iterable.
-   *
-   * @param iterable
-   *          an iterable
-   * @param forEachSqlConsumer
-   *          a consumer that append sql phrase to SQL instance
-   *
-   * @return a self instance
-   *
-   * @param <E>
-   *          element type of iterable
-   *
-   * @since 3.5.15
-   */
-  public <E> T applyForEach(Iterable<E> iterable, ForEachConsumer<T, E> forEachSqlConsumer) {
-    T self = getSelf();
-    int elementIndex = 0;
-    for (E element : iterable) {
-      forEachSqlConsumer.accept(self, element, elementIndex);
-      elementIndex++;
-    }
-    return self;
-  }
-
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -600,44 +407,54 @@ public abstract class AbstractSQL<T> {
     return sb.toString();
   }
 
+  // Appendable接口:StringBuilder/StringBuffer等都是它的子类，表征具有可拼接性，字符等可以拼接在后面。
+  // 一个安全的拼接器，安全是因为外部调用不到。而内部又通过实例化调用
+
   private static class SafeAppendable {
-    private final Appendable appendable;
+    // 主串
+    private final Appendable a;
+    // 主串是否为空
     private boolean empty = true;
 
     public SafeAppendable(Appendable a) {
-      this.appendable = a;
+      super();
+      this.a = a;
     }
 
+    /**
+     * 向主串拼接一段字符串
+     * @param s 被拼接的字符串
+     * @return SafeAppendable内部类自身
+     */
     public SafeAppendable append(CharSequence s) {
       try {
+        // 要拼接的串长度不为零，则拼完后主串也不是空了
         if (empty && s.length() > 0) {
           empty = false;
         }
-        appendable.append(s);
+        // 拼接
+        a.append(s);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
       return this;
     }
 
+    /**
+     * 判断当前主串是否为空
+     * @return 当前主串是否为空
+     */
     public boolean isEmpty() {
       return empty;
     }
-
   }
 
+  // 表征一段完整的SQL语句
   private static class SQLStatement {
 
+    // 语句的类型常量
     public enum StatementType {
-
-      DELETE,
-
-      INSERT,
-
-      SELECT,
-
-      UPDATE
-
+      DELETE, INSERT, SELECT, UPDATE
     }
 
     private enum LimitingRowsStrategy {
@@ -674,7 +491,10 @@ public abstract class AbstractSQL<T> {
 
     }
 
+    // 当前语句的语句类型
     StatementType statementType;
+
+    // 语句片段信息
     List<String> sets = new ArrayList<>();
     List<String> select = new ArrayList<>();
     List<String> tables = new ArrayList<>();
@@ -690,9 +510,13 @@ public abstract class AbstractSQL<T> {
     List<String> lastList = new ArrayList<>();
     List<String> columns = new ArrayList<>();
     List<List<String>> valuesList = new ArrayList<>();
+    // 表征是否去重，该字段仅仅对于SELECT操作有效，它决定是SELECT还是SELECT DISTINCT
     boolean distinct;
+    // 结果偏移量
     String offset;
+    // 结果总数约束
     String limit;
+    // 结果约束策略
     LimitingRowsStrategy limitingRowsStrategy = LimitingRowsStrategy.NOP;
 
     public SQLStatement() {
@@ -700,8 +524,24 @@ public abstract class AbstractSQL<T> {
       valuesList.add(new ArrayList<>());
     }
 
+    // 单词Clause：子句
+
+    /**
+     * sql子句拼接操作
+     * 传参例子：
+     * sqlClause(builder, "WHERE", where, "(", ")", " AND ");
+     * 功能：
+     * 拼接WHERE,拼接（，循环拼接 item AND ……, 拼接）
+     *
+     * @param builder 拼接器
+     * @param keyword SQL子句的关键词
+     * @param parts SQL子句内容，用List存放
+     * @param open 开始符号
+     * @param close 结束符号
+     * @param conjunction 连接词。SQL子句放在List中，该连词负责将List中的各个元素连接起来
+     */
     private void sqlClause(SafeAppendable builder, String keyword, List<String> parts, String open, String close,
-        String conjunction) {
+                           String conjunction) {
       if (!parts.isEmpty()) {
         if (!builder.isEmpty()) {
           builder.append("\n");
@@ -709,9 +549,10 @@ public abstract class AbstractSQL<T> {
         builder.append(keyword);
         builder.append(" ");
         builder.append(open);
-        String last = "________";
+        String last = "________"; // 存储上个词语
         for (int i = 0, n = parts.size(); i < n; i++) {
           String part = parts.get(i);
+          // parts 中可能本身存在连接词，要跳过这些词
           if (i > 0 && !part.equals(AND) && !part.equals(OR) && !last.equals(AND) && !last.equals(OR)) {
             builder.append(conjunction);
           }
@@ -722,6 +563,14 @@ public abstract class AbstractSQL<T> {
       }
     }
 
+    // SELECT 操作的拼接
+    // 因为SELECT操作（其他操作也是）的字符拼接是固定的，因此只要给定各个keyword的list即可按照顺序完成拼接
+
+    /**
+     * 将SQL语句片段信息拼接为一个完整的SELECT语句
+     * @param builder 语句拼接器
+     * @return 拼接完成的SQL语句字符串
+     */
     private String selectSQL(SafeAppendable builder) {
       if (distinct) {
         sqlClause(builder, "SELECT DISTINCT", select, "", "", ", ");
@@ -730,7 +579,7 @@ public abstract class AbstractSQL<T> {
       }
 
       sqlClause(builder, "FROM", tables, "", "", ", ");
-      joins(builder);
+      joins(builder); // JOIN操作相对复杂，调用单独的joins子方法进行操作
       sqlClause(builder, "WHERE", where, "(", ")", " AND ");
       sqlClause(builder, "GROUP BY", groupBy, "", "", ", ");
       sqlClause(builder, "HAVING", having, "(", ")", " AND ");
@@ -739,6 +588,7 @@ public abstract class AbstractSQL<T> {
       return builder.toString();
     }
 
+    // JOIN 操作的拼接，其他都一样
     private void joins(SafeAppendable builder) {
       sqlClause(builder, "JOIN", join, "", "", "\nJOIN ");
       sqlClause(builder, "INNER JOIN", innerJoin, "", "", "\nINNER JOIN ");
@@ -747,6 +597,11 @@ public abstract class AbstractSQL<T> {
       sqlClause(builder, "RIGHT OUTER JOIN", rightOuterJoin, "", "", "\nRIGHT OUTER JOIN ");
     }
 
+    /**
+     * 将SQL语句片段信息拼接为一个完整的INSERT语句
+     * @param builder 语句拼接器
+     * @return 拼接完成的SQL语句字符串
+     */
     private String insertSQL(SafeAppendable builder) {
       sqlClause(builder, "INSERT INTO", tables, "", "", "");
       sqlClause(builder, "", columns, "(", ")", ", ");
@@ -772,63 +627,34 @@ public abstract class AbstractSQL<T> {
       return builder.toString();
     }
 
+    /**
+     * 根据语句类型，调用不同的语句拼接器拼接SQL语句
+     * @param a 起始字符串
+     * @return 拼接完成后的结果
+     */
     public String sql(Appendable a) {
       SafeAppendable builder = new SafeAppendable(a);
       if (statementType == null) {
         return null;
       }
-
       String answer;
-
       switch (statementType) {
         case DELETE:
           answer = deleteSQL(builder);
           break;
-
         case INSERT:
           answer = insertSQL(builder);
           break;
-
         case SELECT:
           answer = selectSQL(builder);
           break;
-
         case UPDATE:
           answer = updateSQL(builder);
           break;
-
         default:
           answer = null;
       }
-
       return answer;
     }
   }
-
-  /**
-   * Consumer for 'forEach' operation.
-   *
-   * @param <T>
-   *          SQL type
-   * @param <E>
-   *          Element type of iterable
-   *
-   * @since 3.5.15
-   */
-  public interface ForEachConsumer<T, E> {
-
-    /**
-     * Accept an iterable element with index.
-     *
-     * @param sql
-     *          SQL instance
-     * @param element
-     *          an iterable element
-     * @param elementIndex
-     *          an element index
-     */
-    void accept(T sql, E element, int elementIndex);
-
-  }
-
 }

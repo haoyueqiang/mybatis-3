@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,35 +23,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * org.apache.ibatis.reflection.ParamNameUtil ，参数名工具类，获得构造方法、普通方法的参数列表。代码如下：
- */
+// 提供获取普通方法或者构造方法的参数名称列表的工具方法。
 public class ParamNameUtil {
-
-  /**
-   * 获得普通方法的参数列表
-   *
-   * @param method 普通方法
-   * @return 参数集合
-   */
   public static List<String> getParamNames(Method method) {
     return getParameterNames(method);
   }
 
-  /**
-   * 获得构造方法的参数列表
-   *
-   * @param constructor 构造方法
-   * @return 参数集合
-   */
   public static List<String> getParamNames(Constructor<?> constructor) {
     return getParameterNames(constructor);
   }
 
+  // 获取方法（Executable的子类包含构造方法和一般方法）的参数列表
   private static List<String> getParameterNames(Executable executable) {
     return Arrays.stream(executable.getParameters()).map(Parameter::getName).collect(Collectors.toList());
   }
 
   private ParamNameUtil() {
+    super();
   }
 }

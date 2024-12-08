@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2023 the original author or authors.
+/**
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,10 +20,10 @@ import java.lang.reflect.Field;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
- * org.apache.ibatis.reflection.invoker.SetFieldInvoker ，实现 Invoker 接口，设置 Field 调用者。代码如下：
  * @author Clinton Begin
  */
 public class SetFieldInvoker implements Invoker {
+  // 要操作的属性
   private final Field field;
 
   public SetFieldInvoker(Field field) {
@@ -33,20 +33,19 @@ public class SetFieldInvoker implements Invoker {
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException {
     try {
+      // 直接给属性赋值就可以
       field.set(target, args[0]);
     } catch (IllegalAccessException e) {
-      if (!Reflector.canControlMemberAccessible()) {
+      if (Reflector.canControlMemberAccessible()) {
+        field.setAccessible(true);
+        field.set(target, args[0]);
+      } else {
         throw e;
       }
-      field.setAccessible(true);
-      field.set(target, args[0]);
     }
     return null;
   }
 
-  /**
-   * @return 返回属性类型
-   */
   @Override
   public Class<?> getType() {
     return field.getType();

@@ -1,11 +1,11 @@
-/*
- *    Copyright 2009-2024 the original author or authors.
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
  *
- *       https://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,52 +31,33 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
-  /**
-   * 普通对象
-   */
+  // 被包装的对象
   private final Object object;
-
-  /**
-   * 类的元数据
-   */
+  // 被包装对象所属类的元类
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);
     this.object = object;
-    // 创建 MetaClass 对象
     this.metaClass = MetaClass.forClass(object.getClass(), metaObject.getReflectorFactory());
   }
 
-  /**
-   * 获得值
-   *
-   * @param prop PropertyTokenizer 对象，相当于键
-   * @return 值
-   */
   @Override
   public Object get(PropertyTokenizer prop) {
-    if (prop.hasNext()) {
-      return getChildValue(prop);
-    } else if (prop.getIndex() != null) {
-      return getCollectionValue(prop, resolveCollection(prop, object));
+    if (prop.getIndex() != null) {
+      // 不是单一属性，而是有数组
+      Object collection = resolveCollection(prop, object);
+      return getCollectionValue(prop, collection);
     } else {
       return getBeanProperty(prop, object);
     }
   }
 
-  /**
-   * 设置指定属性的值
-   *
-   * @param prop  PropertyTokenizer 对象，相当于键
-   * @param value 值
-   */
   @Override
   public void set(PropertyTokenizer prop, Object value) {
-    if (prop.hasNext()) {
-      setChildValue(prop, value);
-    } else if (prop.getIndex() != null) {
-      setCollectionValue(prop, resolveCollection(prop, object), value);
+    if (prop.getIndex() != null) {
+      Object collection = resolveCollection(prop, object);
+      setCollectionValue(prop, collection, value);
     } else {
       setBeanProperty(prop, object, value);
     }
@@ -100,85 +81,86 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public Class<?> getSetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+      if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+        return metaClass.getSetterType(name);
+      } else {
+        return metaValue.getSetterType(prop.getChildren());
+      }
+    } else {
       return metaClass.getSetterType(name);
     }
-    MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
-    if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
-      return metaClass.getSetterType(name);
-    }
-    return metaValue.getSetterType(prop.getChildren());
   }
 
-  /**
-   * 获得指定属性的 getting 方法的返回值
-   * @param name
-   * @return
-   */
   @Override
   public Class<?> getGetterType(String name) {
-    // 创建 PropertyTokenizer 对象，对 name 进行分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+      if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+        return metaClass.getGetterType(name);
+      } else {
+        return metaValue.getGetterType(prop.getChildren());
+      }
+    } else {
       return metaClass.getGetterType(name);
     }
-    MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
-    if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
-      return metaClass.getGetterType(name);
-    }
-    return metaValue.getGetterType(prop.getChildren());
   }
 
   @Override
   public boolean hasSetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      if (metaClass.hasSetter(prop.getIndexedName())) {
+        MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+        if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+          return metaClass.hasSetter(name);
+        } else {
+          return metaValue.hasSetter(prop.getChildren());
+        }
+      } else {
+        return false;
+      }
+    } else {
       return metaClass.hasSetter(name);
     }
-    if (metaClass.hasSetter(prop.getIndexedName())) {
-      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
-      if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
-        return metaClass.hasSetter(name);
-      }
-      return metaValue.hasSetter(prop.getChildren());
-    }
-    return false;
   }
 
   @Override
   public boolean hasGetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    if (!prop.hasNext()) {
+    if (prop.hasNext()) {
+      if (metaClass.hasGetter(prop.getIndexedName())) {
+        MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+        if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+          return metaClass.hasGetter(name);
+        } else {
+          return metaValue.hasGetter(prop.getChildren());
+        }
+      } else {
+        return false;
+      }
+    } else {
       return metaClass.hasGetter(name);
     }
-    if (metaClass.hasGetter(prop.getIndexedName())) {
-      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
-      if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
-        return metaClass.hasGetter(name);
-      }
-      return metaValue.hasGetter(prop.getChildren());
-    }
-    return false;
   }
 
-  //创建指定属性的值
   @Override
   public MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory) {
     MetaObject metaValue;
-    // 获得 setting 方法的方法参数类型
     Class<?> type = getSetterType(prop.getName());
     try {
       Object newObject = objectFactory.create(type);
-      metaValue = MetaObject.forObject(newObject, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(),
-          metaObject.getReflectorFactory());
+      metaValue = MetaObject.forObject(newObject, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(), metaObject.getReflectorFactory());
       set(prop, newObject);
     } catch (Exception e) {
-      throw new ReflectionException("Cannot set value of property '" + name + "' because '" + name
-          + "' is null and cannot be instantiated on instance of " + type.getName() + ". Cause:" + e.toString(), e);
+      throw new ReflectionException("Cannot set value of property '" + name + "' because '" + name + "' is null and cannot be instantiated on instance of " + type.getName() + ". Cause:" + e.toString(), e);
     }
     return metaValue;
   }
 
+  // 通过调用getter方法，获取对象属性
   private Object getBeanProperty(PropertyTokenizer prop, Object object) {
     try {
       Invoker method = metaClass.getGetInvoker(prop.getName());
@@ -190,23 +172,21 @@ public class BeanWrapper extends BaseWrapper {
     } catch (RuntimeException e) {
       throw e;
     } catch (Throwable t) {
-      throw new ReflectionException(
-          "Could not get property '" + prop.getName() + "' from " + object.getClass() + ".  Cause: " + t.toString(), t);
+      throw new ReflectionException("Could not get property '" + prop.getName() + "' from " + object.getClass() + ".  Cause: " + t.toString(), t);
     }
   }
 
   private void setBeanProperty(PropertyTokenizer prop, Object object, Object value) {
     try {
       Invoker method = metaClass.getSetInvoker(prop.getName());
-      Object[] params = { value };
+      Object[] params = {value};
       try {
         method.invoke(object, params);
       } catch (Throwable t) {
         throw ExceptionUtil.unwrapThrowable(t);
       }
     } catch (Throwable t) {
-      throw new ReflectionException("Could not set property '" + prop.getName() + "' of '" + object.getClass()
-          + "' with value '" + value + "' Cause: " + t.toString(), t);
+      throw new ReflectionException("Could not set property '" + prop.getName() + "' of '" + object.getClass() + "' with value '" + value + "' Cause: " + t.toString(), t);
     }
   }
 
