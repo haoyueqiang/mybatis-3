@@ -1,0 +1,1 @@
+# MyBaits 所有的配置信息都封装在 Configuration 对象之中；

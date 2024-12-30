@@ -1,0 +1,1 @@
+# MappedStatement 维护了一条 <select|update|delete|insert|> 节点的封装；

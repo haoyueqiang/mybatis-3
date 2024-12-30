@@ -1,0 +1,1 @@
+# ResultSetHandler: 负责将 JDBC 返回的 Result 结果集对象转成 List 类型的集合;

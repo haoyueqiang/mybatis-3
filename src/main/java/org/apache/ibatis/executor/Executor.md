@@ -1,0 +1,1 @@
+# Executor: MyBatis 执行器，是 MyBatis 调度的核心，负责 SQL 语句的生成和查询缓存的维护；
