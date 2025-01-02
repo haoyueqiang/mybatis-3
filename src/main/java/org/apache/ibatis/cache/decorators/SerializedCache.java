@@ -30,6 +30,7 @@ import org.apache.ibatis.io.Resources;
 
 /**
  * @author Clinton Begin
+ * org.apache.ibatis.cache.decorators.SerializedCache ，实现 Cache 接口，支持序列化值的 Cache 实现类。代码如下：
  */
 public class SerializedCache implements Cache {
 
@@ -58,7 +59,7 @@ public class SerializedCache implements Cache {
   public void putObject(Object key, Object object) {
     if (object == null || object instanceof Serializable) { // 要缓存的数据必须是可以序列化的
       // 将数据序列化后写入缓存
-      delegate.putObject(key, serialize((Serializable) object));
+      delegate.putObject(key, serialize((Serializable) object));// 序列化
     } else { // 要缓存的数据不可序列化
       // 抛出异常
       throw new CacheException("SharedCache failed to make a copy of a non-serializable object: " + object);

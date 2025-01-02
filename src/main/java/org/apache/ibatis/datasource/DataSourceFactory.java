@@ -20,11 +20,12 @@ import javax.sql.DataSource;
 
 /**
  * @author Clinton Begin
+ * DataSourceFactory扮演工厂接口的角色
  */
 public interface DataSourceFactory {
 
   /**
-   * 设置工厂属性
+   * 设置工厂属性，设置DataSource相关属性，一般在类初始化完成之后
    * @param props 属性
    */
   void setProperties(Properties props);

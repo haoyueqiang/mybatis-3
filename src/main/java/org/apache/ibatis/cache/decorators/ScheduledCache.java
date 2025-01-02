@@ -19,14 +19,19 @@ import org.apache.ibatis.cache.Cache;
 
 /**
  * @author Clinton Begin
+ * org.apache.ibatis.cache.decorators.ScheduledCache ，实现 Cache 接口，定时清空整个容器的 Cache 实现类。代码如下：
  */
 public class ScheduledCache implements Cache {
 
   // 被装饰的对象
   private final Cache delegate;
-  // 清理的时间间隔
+  /**
+   * 清空间隔，单位：毫秒
+   */
   protected long clearInterval;
-  // 上次清理的时刻
+  /**
+   * 最后清空时间，单位：毫秒
+   */
   protected long lastClear;
 
   public ScheduledCache(Cache delegate) {

@@ -26,6 +26,7 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
  * @author Clinton Begin
+ * UnpooledDataSourceFactory 扮演具体工厂的角色
  */
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
@@ -51,7 +52,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
     Properties driverProperties = new Properties();
     // 生成一个包含DataSource对象的元对象
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
-    // 设置属性
+    // 设置属性，遍历properties属性，该集合通常配置了数据源需要的信息
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
       if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) { // 取出以"driver."开头的配置信息

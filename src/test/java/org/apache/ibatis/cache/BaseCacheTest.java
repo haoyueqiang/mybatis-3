@@ -32,6 +32,10 @@ class BaseCacheTest {
   @Test
   void shouldDemonstrateEqualsAndHashCodeForVariousCacheTypes() {
     PerpetualCache cache = new PerpetualCache("test_cache");
+    System.out.println("key=" + cache.getId());
+    System.out.println("size=" + cache.getSize());
+    System.out.println("object=" + cache.getObject(cache.getId()));
+
     assertEquals(cache, cache);
     assertEquals(cache, new SynchronizedCache(cache));
     assertEquals(cache, new SerializedCache(cache));

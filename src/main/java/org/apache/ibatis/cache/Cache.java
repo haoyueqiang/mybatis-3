@@ -37,6 +37,8 @@ import java.util.concurrent.locks.ReadWriteLock;
  * </pre>
  *
  * @author Clinton Begin
+ *
+ * 缓存容器接口。注意，它是一个容器，有点类似 HashMap ，可以往其中添加各种缓存。代码如下：
  */
 
 public interface Cache {

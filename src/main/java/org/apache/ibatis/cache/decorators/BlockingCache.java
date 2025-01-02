@@ -32,6 +32,10 @@ import org.apache.ibatis.cache.CacheException;
  *
  * @author Eduardo Macarron
  *
+ * org.apache.ibatis.cache.decoratorsBlockingCache ，实现 Cache 接口，阻塞的 Cache 实现类。
+ *
+ * 这里的阻塞比较特殊，当线程去获取缓存值时，如果不存在，则会阻塞后续的其他线程去获取该缓存。
+ * 为什么这么有这样的设计呢？因为当线程 A 在获取不到缓存值时，一般会去设置对应的缓存值，这样就避免其他也需要该缓存的线程 B、C 等，重复添加缓存。
  */
 public class BlockingCache implements Cache {
 
@@ -65,7 +69,7 @@ public class BlockingCache implements Cache {
   @Override
   public void putObject(Object key, Object value) {
     try {
-      // 向缓存中放入数据
+      // 向缓存中放入数据- 锁的映射表。键为缓存记录的键，值为对应的锁。
       delegate.putObject(key, value);
     } finally {
       // 因为已经放入了数据，因此释放锁

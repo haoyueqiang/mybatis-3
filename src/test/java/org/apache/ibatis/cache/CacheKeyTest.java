@@ -42,9 +42,10 @@ class CacheKeyTest {
 
   @Test
   void shouldTestCacheKeysNotEqualDueToDateDifference() throws Exception {
-    CacheKey key1 = new CacheKey(new Object[] { 1, "hello", null, new Date() });
+    Date date = new Date();
+    CacheKey key1 = new CacheKey(new Object[] { 1, "hello", null, new Date(date.getTime()) });
     Thread.sleep(1000);
-    CacheKey key2 = new CacheKey(new Object[] { 1, "hello", null, new Date() });
+    CacheKey key2 = new CacheKey(new Object[] { 1, "hello", null, new Date(date.getTime()) });
     assertNotEquals(key1, key2);
     assertNotEquals(key2, key1);
     assertNotEquals(key1.hashCode(), key2.hashCode());

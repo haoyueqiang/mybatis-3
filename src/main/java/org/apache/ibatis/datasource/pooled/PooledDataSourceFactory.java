@@ -19,6 +19,7 @@ import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
 
 /**
  * @author Clinton Begin
+ * PooledDataSourceFactory 扮演具体工厂的角色
  */
 public class PooledDataSourceFactory extends UnpooledDataSourceFactory {
 
