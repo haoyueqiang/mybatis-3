@@ -42,7 +42,7 @@ import org.apache.ibatis.domain.blog.DraftPost;
 import org.apache.ibatis.domain.blog.Post;
 import org.apache.ibatis.domain.blog.Section;
 import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.executor_SQL执行_执行器.result.DefaultResultHandler;
+import org.apache.ibatis.executor.result.DefaultResultHandler;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;

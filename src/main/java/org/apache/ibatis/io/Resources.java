@@ -40,7 +40,7 @@ public class Resources {
    */
   private static Charset charset;
 
-  public Resources() {
+  Resources() {
   }
 
   /**

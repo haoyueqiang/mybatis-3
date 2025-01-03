@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.apache.ibatis.BaseDataTest;
-import org.apache.ibatis.executor_SQL执行_执行器.loader.ProxyFactory;
-import org.apache.ibatis.executor_SQL执行_执行器.loader.cglib.CglibProxyFactory;
-import org.apache.ibatis.executor_SQL执行_执行器.loader.javassist.JavassistProxyFactory;
+import org.apache.ibatis.executor.loader.ProxyFactory;
+import org.apache.ibatis.executor.loader.cglib.CglibProxyFactory;
+import org.apache.ibatis.executor.loader.javassist.JavassistProxyFactory;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
 import org.apache.ibatis.BaseDataTest;
-import org.apache.ibatis.executor_SQL执行_执行器.BatchResult;
+import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;

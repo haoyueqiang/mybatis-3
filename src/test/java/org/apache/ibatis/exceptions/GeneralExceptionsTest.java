@@ -24,7 +24,7 @@ import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.cache.CacheException;
 import org.apache.ibatis.datasource.DataSourceException;
-import org.apache.ibatis.executor_SQL执行_执行器.ExecutorException;
+import org.apache.ibatis.executor.ExecutorException;
 import org.apache.ibatis.logging.LogException;
 import org.apache.ibatis.parsing.ParsingException;
 import org.apache.ibatis.plugin.PluginException;

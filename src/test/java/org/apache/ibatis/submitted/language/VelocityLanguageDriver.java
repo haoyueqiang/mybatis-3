@@ -15,7 +15,7 @@
  */
 package org.apache.ibatis.submitted.language;
 
-import org.apache.ibatis.executor_SQL执行_执行器.parameter.ParameterHandler;
+import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;

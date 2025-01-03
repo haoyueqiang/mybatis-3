@@ -125,7 +125,7 @@ public abstract class VFS {
    * @param methodName The name of the method.
    * @param parameterTypes The types of the parameters accepted by the method.
    */
-  public static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+  protected static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
     if (clazz == null) {
       return null;
     }
@@ -151,7 +151,7 @@ public abstract class VFS {
    * @throws RuntimeException If anything else goes wrong
    */
   @SuppressWarnings("unchecked")
-  public static <T> T invoke(Method method, Object object, Object... parameters)
+  protected static <T> T invoke(Method method, Object object, Object... parameters)
       throws IOException, RuntimeException {
     try {
       return (T) method.invoke(object, parameters);

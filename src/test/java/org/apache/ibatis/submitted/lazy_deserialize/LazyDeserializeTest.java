@@ -24,7 +24,7 @@ import java.io.ObjectOutputStream;
 import java.io.Reader;
 
 import org.apache.ibatis.BaseDataTest;
-import org.apache.ibatis.executor_SQL执行_执行器.ExecutorException;
+import org.apache.ibatis.executor.ExecutorException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;

@@ -20,8 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.ibatis.executor_SQL执行_执行器.ErrorContext;
-import org.apache.ibatis.executor_SQL执行_执行器.parameter.ParameterHandler;
+import org.apache.ibatis.executor.ErrorContext;
+import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;

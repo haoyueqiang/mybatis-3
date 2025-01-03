@@ -52,7 +52,7 @@ public abstract class BaseBuilder {
 
   /*************数值读取器模块，开始*************/
   // 创建了一个支持默认值的读取器
-  public Pattern parseExpression(String regex, String defaultValue) {
+  protected Pattern parseExpression(String regex, String defaultValue) {
     return Pattern.compile(regex == null ? defaultValue : regex);
   }
 
@@ -75,7 +75,7 @@ public abstract class BaseBuilder {
   /************字符串转Enum类型，开始*************/
   // 字符串转enum
   //解析JdbcType
-  public JdbcType resolveJdbcType(String alias) {
+  protected JdbcType resolveJdbcType(String alias) {
     if (alias == null) {
       return null;
     }
@@ -88,7 +88,7 @@ public abstract class BaseBuilder {
 
   // 字符串转enum
   //解析ResultSetType
-  public ResultSetType resolveResultSetType(String alias) {
+  protected ResultSetType resolveResultSetType(String alias) {
     if (alias == null) {
       return null;
     }
@@ -101,7 +101,7 @@ public abstract class BaseBuilder {
 
   // 字符串转enum
   //解析ParameterMode(SP的IN/OUT/INOUT)
-  public ParameterMode resolveParameterMode(String alias) {
+  protected ParameterMode resolveParameterMode(String alias) {
     if (alias == null) {
       return null;
     }
@@ -117,7 +117,7 @@ public abstract class BaseBuilder {
 
   /*************根据别名创建实例，开始*************/
   //根据别名解析Class，然后创建实例
-  public Object createInstance(String alias) {
+  protected Object createInstance(String alias) {
     // 先找到对应的类
     Class<?> clazz = resolveClass(alias);
     if (clazz == null) {
@@ -131,7 +131,7 @@ public abstract class BaseBuilder {
     }
   }
 
-  public <T> Class<? extends T> resolveClass(String alias) {
+  protected <T> Class<? extends T> resolveClass(String alias) {
     if (alias == null) {
       return null;
     }
@@ -146,7 +146,7 @@ public abstract class BaseBuilder {
 
   /*************根据别名创建handler，开始*************/
   // 查询时，javaType无用，除非是根据typeHandlerAlias没找到，准备新创建一个时使用。
-  public TypeHandler<?> resolveTypeHandler(Class<?> javaType, String typeHandlerAlias) {
+  protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, String typeHandlerAlias) {
     if (typeHandlerAlias == null) {
       return null;
     }

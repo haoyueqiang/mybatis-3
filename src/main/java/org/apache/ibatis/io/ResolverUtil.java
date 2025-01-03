@@ -252,7 +252,7 @@ public class ResolverUtil<T> {
    *
    * @param packageName The Java package name to convert to a path
    */
-  public String getPackagePath(String packageName) {
+  protected String getPackagePath(String packageName) {
     return packageName == null ? null : packageName.replace('.', '/');
   }
 
@@ -269,7 +269,7 @@ public class ResolverUtil<T> {
    * @param fqn 类文件全名
    */
   @SuppressWarnings("unchecked")
-  public void addIfMatching(Test test, String fqn) {
+  protected void addIfMatching(Test test, String fqn) {
     try {
       // 转化为外部名称
       String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');

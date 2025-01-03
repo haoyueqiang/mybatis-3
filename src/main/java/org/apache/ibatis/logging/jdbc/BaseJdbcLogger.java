@@ -82,7 +82,7 @@ public abstract class BaseJdbcLogger {
     EXECUTE_METHODS.add("addBatch");
   }
 
-  public void setColumn(Object key, Object value) {
+  protected void setColumn(Object key, Object value) {
     columnMap.put(key, value);
     columnNames.add(key);
     columnValues.add(value);
@@ -92,7 +92,7 @@ public abstract class BaseJdbcLogger {
     return columnMap.get(key);
   }
 
-  public String getParameterValueString() {
+  protected String getParameterValueString() {
     List<Object> typeList = new ArrayList<>(columnValues.size());
     for (Object value : columnValues) {
       if (value == null) {

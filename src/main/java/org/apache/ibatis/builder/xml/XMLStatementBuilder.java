@@ -20,10 +20,10 @@ import java.util.Locale;
 
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.apache.ibatis.executor_SQL执行_执行器.keygen.Jdbc3KeyGenerator;
-import org.apache.ibatis.executor_SQL执行_执行器.keygen.KeyGenerator;
-import org.apache.ibatis.executor_SQL执行_执行器.keygen.NoKeyGenerator;
-import org.apache.ibatis.executor_SQL执行_执行器.keygen.SelectKeyGenerator;
+import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
+import org.apache.ibatis.executor.keygen.KeyGenerator;
+import org.apache.ibatis.executor.keygen.NoKeyGenerator;
+import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.mapping.SqlCommandType;
