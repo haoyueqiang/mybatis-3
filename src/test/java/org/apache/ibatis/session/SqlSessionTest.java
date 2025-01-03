@@ -531,6 +531,7 @@ class SqlSessionTest extends BaseDataTest {
     try (SqlSession session = sqlMapper.openSession()) {
       AuthorMapper mapper = session.getMapper(AuthorMapper.class);
       Collection<Author> authors = mapper.selectAllAuthorsLinkedList();
+
       assertEquals(2, authors.size());
     }
   }
