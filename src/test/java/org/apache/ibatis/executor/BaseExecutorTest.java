@@ -60,20 +60,33 @@ class BaseExecutorTest extends BaseDataTest {
     config.setDefaultFetchSize(100);
   }
 
+  /**
+   * 这个测试方法 shouldInsertNewAuthorWithBeforeAutoKey 测试了在使用 MyBatis 框架时，
+   * 插入一个新作者（Author）对象并验证其自动生成的主键（ID）是否符合预期。以下是测试方法的逐步解释：
+   * @throws Exception
+   */
   @Test
   void shouldInsertNewAuthorWithBeforeAutoKey() throws Exception {
-
+    // 使用 createExecutor 方法创建一个 Executor 实例，该实例被配置为使用 JDBC 事务管理器 JdbcTransaction，这里传入了数据源 ds 和一些事务参数。
     Executor executor = createExecutor(new JdbcTransaction(ds, null, false));
     try {
+      // 创建一个新的 Author 对象，其 ID 设置为 -1，表示期望数据库自动生成 ID。
       Author author = new Author(-1, "someone", "******", "someone@apache.org", null, Section.NEWS);
+      // 使用 ExecutorTestHelper 的两个静态方法分别准备插入（insert）和查询（select）的 MappedStatement 对象。这些对象定义了 SQL 语句和相关的参数映射。
       MappedStatement insertStatement = ExecutorTestHelper.prepareInsertAuthorMappedStatementWithBeforeAutoKey(config);
       MappedStatement selectStatement = ExecutorTestHelper.prepareSelectOneAuthorMappedStatement(config);
+      // 通过 executor.update 方法执行插入操作，传入 insertStatement 和 author 对象。这个方法应该返回影响的行数。
       int rows = executor.update(insertStatement, author);
+      // 使用 assertTrue 验证插入操作是否成功（返回的行数大于 0 或等于 BatchExecutor.BATCH_UPDATE_RETURN_VALUE，后者是批量操作时的特殊返回值）。
       assertTrue(rows > 0 || rows == BatchExecutor.BATCH_UPDATE_RETURN_VALUE);
       if (rows == BatchExecutor.BATCH_UPDATE_RETURN_VALUE) {
+        // 如果返回值是 BatchExecutor.BATCH_UPDATE_RETURN_VALUE，则调用 executor.flushStatements 来确保所有批量操作被执行。
         executor.flushStatements();
       }
+      // 使用 assertEquals 验证 author 对象的 ID 是否被正确设置为 123456（这是一个预期的自动生成的 ID）。
       assertEquals(123456, author.getId());
+      // 如果 author 的 ID 不是批量操作的特殊返回值，则使用 executor.query 方法查询刚插入的作者信息，
+      // 并验证查询结果是否正确（大小为 1，并且内容与原始 author 对象匹配）。
       if (author.getId() != BatchExecutor.BATCH_UPDATE_RETURN_VALUE) {
         List<Author> authors = executor.query(selectStatement, author.getId(), RowBounds.DEFAULT, Executor.NO_RESULT_HANDLER);
         executor.rollback(true);
@@ -82,7 +95,9 @@ class BaseExecutorTest extends BaseDataTest {
         assertTrue(author.getId() >= 10000);
       }
     } finally {
+      // 如果查询验证通过，则执行 executor.rollback(true) 回滚事务，以确保测试数据不会被提交到数据库。
       executor.rollback(true);
+      // 最后，无论测试是否成功，都会执行 executor.close(false) 来关闭 Executor 实例，释放资源。
       executor.close(false);
     }
   }
