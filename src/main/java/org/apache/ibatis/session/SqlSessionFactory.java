@@ -30,12 +30,29 @@ public interface SqlSessionFactory {
 
   SqlSession openSession(Connection connection);
 
+  /**
+   * 表示 JDBC 支持的不同事务隔离级别。
+   * @param level 事务隔离级别
+   * @return
+   */
   SqlSession openSession(TransactionIsolationLevel level);
 
   SqlSession openSession(ExecutorType execType);
 
+  /**
+   *
+   * @param execType
+   * @param autoCommit 是否自动提交
+   * @return
+   */
   SqlSession openSession(ExecutorType execType, boolean autoCommit);
 
+  /**
+   *
+   * @param execType
+   * @param level 事务隔离级别
+   * @return
+   */
   SqlSession openSession(ExecutorType execType, TransactionIsolationLevel level);
 
   SqlSession openSession(ExecutorType execType, Connection connection);

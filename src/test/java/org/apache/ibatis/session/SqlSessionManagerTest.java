@@ -45,13 +45,13 @@ class SqlSessionManagerTest extends BaseDataTest {
   @Test
   void shouldThrowExceptionIfMappedStatementDoesNotExistAndSqlSessionIsOpen() {
     try {
-      manager.startManagedSession();
+      manager.startManagedSession(); // 开启session
       manager.selectList("ThisStatementDoesNotExist");
       fail("Expected exception to be thrown due to statement that does not exist.");
     } catch (PersistenceException e) {
       assertTrue(e.getMessage().contains("does not contain value for ThisStatementDoesNotExist"));
     } finally {
-      manager.close();
+      manager.close(); // 关闭SqlSession
     }
   }
 

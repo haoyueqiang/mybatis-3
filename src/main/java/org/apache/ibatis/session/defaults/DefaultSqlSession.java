@@ -162,20 +162,24 @@ public class DefaultSqlSession implements SqlSession {
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
     } finally {
+      // 异常时重置
       ErrorContext.instance().reset();
     }
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public void select(String statement, Object parameter, ResultHandler handler) {
     select(statement, parameter, RowBounds.DEFAULT, handler);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public void select(String statement, ResultHandler handler) {
     select(statement, null, RowBounds.DEFAULT, handler);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public void select(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     try {
@@ -188,21 +192,25 @@ public class DefaultSqlSession implements SqlSession {
     }
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int insert(String statement) {
     return insert(statement, null);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int insert(String statement, Object parameter) {
     return update(statement, parameter);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int update(String statement) {
     return update(statement, null);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int update(String statement, Object parameter) {
     try {
@@ -216,11 +224,13 @@ public class DefaultSqlSession implements SqlSession {
     }
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int delete(String statement) {
     return update(statement, null);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作,当前为具体的执行对象：DefaultSqlSession
   @Override
   public int delete(String statement, Object parameter) {
     return update(statement, parameter);
@@ -330,6 +340,7 @@ public class DefaultSqlSession implements SqlSession {
     return (!autoCommit && dirty) || force;
   }
 
+  // 包装入参
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<>();

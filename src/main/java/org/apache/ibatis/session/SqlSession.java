@@ -34,7 +34,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a single row mapped from the statement key.
    * @param <T> the returned object type
-   * @param statement
+   * @param statement  SQL语句
    * @return Mapped object
    */
   <T> T selectOne(String statement);
@@ -42,7 +42,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a single row mapped from the statement key and parameter.
    * @param <T> the returned object type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @return Mapped object
    */
@@ -51,7 +51,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a list of mapped objects from the statement key and parameter.
    * @param <E> the returned list element type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @return List of mapped object
    */
   <E> List<E> selectList(String statement);
@@ -59,7 +59,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a list of mapped objects from the statement key and parameter.
    * @param <E> the returned list element type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @return List of mapped object
    */
@@ -69,7 +69,7 @@ public interface SqlSession extends Closeable {
    * Retrieve a list of mapped objects from the statement key and parameter,
    * within the specified row bounds.
    * @param <E> the returned list element type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句 SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @param rowBounds  Bounds to limit object retrieval
    * @return List of mapped object
@@ -83,7 +83,7 @@ public interface SqlSession extends Closeable {
    * Eg. Return a of Map[Integer,Author] for selectMap("selectAuthors","id")
    * @param <K> the returned Map keys type
    * @param <V> the returned Map values type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param mapKey The property to use as key for each value in the list.
    * @return Map containing key pair data.
    */
@@ -95,7 +95,7 @@ public interface SqlSession extends Closeable {
    * objects.
    * @param <K> the returned Map keys type
    * @param <V> the returned Map values type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @param mapKey The property to use as key for each value in the list.
    * @return Map containing key pair data.
@@ -108,7 +108,7 @@ public interface SqlSession extends Closeable {
    * objects.
    * @param <K> the returned Map keys type
    * @param <V> the returned Map values type
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @param mapKey The property to use as key for each value in the list.
    * @param rowBounds  Bounds to limit object retrieval
@@ -119,7 +119,7 @@ public interface SqlSession extends Closeable {
   /**
    * A Cursor offers the same results as a List, except it fetches data lazily using an Iterator.
    * @param <T> the returned cursor element type.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @return Cursor of mapped objects
    */
   <T> Cursor<T> selectCursor(String statement);
@@ -127,7 +127,7 @@ public interface SqlSession extends Closeable {
   /**
    * A Cursor offers the same results as a List, except it fetches data lazily using an Iterator.
    * @param <T> the returned cursor element type.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @return Cursor of mapped objects
    */
@@ -136,7 +136,7 @@ public interface SqlSession extends Closeable {
   /**
    * A Cursor offers the same results as a List, except it fetches data lazily using an Iterator.
    * @param <T> the returned cursor element type.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @param rowBounds  Bounds to limit object retrieval
    * @return Cursor of mapped objects
@@ -146,7 +146,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a single row mapped from the statement key and parameter
    * using a {@code ResultHandler}.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param parameter A parameter object to pass to the statement.
    * @param handler ResultHandler that will handle each retrieved row
    */
@@ -155,7 +155,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a single row mapped from the statement
    * using a {@code ResultHandler}.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param handler ResultHandler that will handle each retrieved row
    */
   void select(String statement, ResultHandler handler);
@@ -163,7 +163,7 @@ public interface SqlSession extends Closeable {
   /**
    * Retrieve a single row mapped from the statement key and parameter
    * using a {@code ResultHandler} and {@code RowBounds}.
-   * @param statement Unique identifier matching the statement to use.
+   * @param statement  SQL语句
    * @param rowBounds RowBound instance to limit the query results
    * @param handler ResultHandler that will handle each retrieved row
    */
@@ -171,7 +171,7 @@ public interface SqlSession extends Closeable {
 
   /**
    * Execute an insert statement.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @return int The number of rows affected by the insert.
    */
   int insert(String statement);
@@ -180,7 +180,7 @@ public interface SqlSession extends Closeable {
    * Execute an insert statement with the given parameter object. Any generated
    * autoincrement values or selectKey entries will modify the given parameter
    * object properties. Only the number of rows affected will be returned.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @param parameter A parameter object to pass to the statement.
    * @return int The number of rows affected by the insert.
    */
@@ -188,14 +188,14 @@ public interface SqlSession extends Closeable {
 
   /**
    * Execute an update statement. The number of rows affected will be returned.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @return int The number of rows affected by the update.
    */
   int update(String statement);
 
   /**
    * Execute an update statement. The number of rows affected will be returned.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @param parameter A parameter object to pass to the statement.
    * @return int The number of rows affected by the update.
    */
@@ -203,14 +203,14 @@ public interface SqlSession extends Closeable {
 
   /**
    * Execute a delete statement. The number of rows affected will be returned.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @return int The number of rows affected by the delete.
    */
   int delete(String statement);
 
   /**
    * Execute a delete statement. The number of rows affected will be returned.
-   * @param statement Unique identifier matching the statement to execute.
+   * @param statement  SQL语句 Unique identifier matching the statement to execute.
    * @param parameter A parameter object to pass to the statement.
    * @return int The number of rows affected by the delete.
    */

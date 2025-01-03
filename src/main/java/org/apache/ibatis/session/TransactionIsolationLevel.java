@@ -21,6 +21,8 @@ import java.sql.Connection;
  * 枚举类，表示 JDBC 支持的不同事务隔离级别。
  * 这些隔离级别控制了一个事务对其他并发事务所做更改的可见性。
  * 枚举常量对应 {@link java.sql.Connection} 中定义的隔离级别。
+ *
+ * 事务隔离级别
  */
 public enum TransactionIsolationLevel {
 

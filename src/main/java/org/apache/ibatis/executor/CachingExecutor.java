@@ -33,13 +33,13 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
- * @author Clinton Begin
- * @author Eduardo Macarron
+ * org.apache.ibatis.executor.CachingExecutor ，实现 Executor 接口，支持二级缓存的 Executor 的实现类。
  */
 public class CachingExecutor implements Executor {
 
   // 被装饰的执行器
   private final Executor delegate;
+
   // 事务缓存管理器
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 

@@ -1,18 +1,19 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2019 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.ibatis.executor;
 
 import static org.apache.ibatis.executor.ExecutionPlaceholder.EXECUTION_PLACEHOLDER;
@@ -45,18 +46,62 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
- * @author Clinton Begin
+ * org.apache.ibatis.executor.BaseExecutor ，实现 Executor 接口，提供骨架方法，从而使子类只要实现指定的几个抽象方法即可。
+ *
+ * 为什么定义为抽象类，有什么优点吗？
+ * 在 MyBatis 中，BaseExecutor 是一个抽象类，它实现了 Executor 接口。将 BaseExecutor 定义为抽象类有以下几个优点：
+ *
+ * 代码复用：
+ * 抽象类可以包含一些共用的代码和逻辑，这些代码可以在所有继承自 BaseExecutor 的子类中复用。这样可以减少代码的重复，提高代码的可维护性。
+ *
+ * 封装和抽象：
+ * 抽象类允许开发者封装公共的属性和方法，同时隐藏具体的实现细节。这样，子类只需要关注特定的实现，而不必关心那些已经被抽象化的部分。
+ *
+ * 强制子类实现特定方法：
+ * 抽象类中可以包含抽象方法，这些方法没有具体的实现，必须由子类来实现。这样可以强制子类提供特定的功能实现，确保所有子类都遵循相同的接口规范。
+ *
+ * 提供默认实现：
+ * BaseExecutor 可以提供一些方法的默认实现，这样子类可以选择性地覆盖这些方法。对于那些不需要特别定制的方法，子类可以直接使用父类的实现。
+ *
+ * 减少错误：
+ * 通过提供一个基类，可以减少子类在实现时的错误。基类可以处理一些通用的错误处理和边界条件检查，这些在所有子类中都是相同的。
+ *
+ * 设计灵活性：
+ * 抽象类提供了一个设计上的灵活性，允许开发者在不修改现有代码的情况下引入新的功能。新的子类可以实现新的功能，而不影响现有的子类。
+ *
+ * 提高可读性：
+ * 抽象类可以提供更清晰的代码结构，使得其他开发者更容易理解代码的意图和设计。通过查看抽象类和它的子类，可以快速了解整个类的层次结构。
+ *
+ * 易于扩展：
+ * 如果未来需要添加新类型的 Executor，只需要添加一个新的子类并实现或覆盖必要的方法即可，而不需要修改现有的 BaseExecutor 类。
+ * 在 MyBatis 中，BaseExecutor 提供了执行器的基本框架和一些通用的数据库操作逻辑，比如事务管理、缓存处理等。
+ * 具体的执行策略（如简单执行、批量执行、重复执行）则由继承自 BaseExecutor 的具体子类实现。这种设计使得 MyBatis 的执行器模块既灵活又易于扩展。
  */
 public abstract class BaseExecutor implements Executor {
 
   private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
+  /**
+   * 事务对象
+   */
   protected Transaction transaction;
+
+  /**
+   * 包装的 Executor 对象
+   */
   protected Executor wrapper;
 
+  /**
+   * DeferredLoad( 延迟加载 ) 队列
+   */
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
-  // 查询操作的结果缓存
+
+  /**
+   * 本地缓存，即一级缓存
+   * 查询操作的结果缓存
+   */
   protected PerpetualCache localCache;
+
   // Callable查询的输出参数缓存
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
@@ -111,15 +156,15 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 更新数据库数据，INSERT/UPDATE/DELETE三种操作都会调用该方法
-   * @param ms 映射语句
+   *
+   * @param ms        映射语句
    * @param parameter 参数对象
    * @return 数据库操作结果
    * @throws SQLException
    */
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
-    ErrorContext.instance().resource(ms.getResource())
-            .activity("executing an update").object(ms.getId());
+    ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
       // 执行器已经关闭
       throw new ExecutorException("Executor was closed.");
@@ -144,16 +189,18 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 执行查询操作
-   * @param ms 映射语句对象
-   * @param parameter 参数对象
-   * @param rowBounds 翻页限制
+   *
+   * @param ms            映射语句对象
+   * @param parameter     参数对象
+   * @param rowBounds     翻页限制
    * @param resultHandler 结果处理器
-   * @param <E> 输出结果类型
+   * @param <E>           输出结果类型
    * @return 查询结果
    * @throws SQLException
    */
   @Override
-  public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+  public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler)
+    throws SQLException {
     BoundSql boundSql = ms.getBoundSql(parameter);
     // 生成缓存的键
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
@@ -162,19 +209,21 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 查询数据库中的数据
-   * @param ms 映射语句
-   * @param parameter 参数对象
-   * @param rowBounds 翻页限制条件
+   *
+   * @param ms            映射语句
+   * @param parameter     参数对象
+   * @param rowBounds     翻页限制条件
    * @param resultHandler 结果处理器
-   * @param key 缓存的键
-   * @param boundSql 查询语句
-   * @param <E> 结果类型
+   * @param key           缓存的键
+   * @param boundSql      查询语句
+   * @param <E>           结果类型
    * @return 结果列表
    * @throws SQLException
    */
   @SuppressWarnings("unchecked")
   @Override
-  public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+  public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,
+                           CacheKey key, BoundSql boundSql) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
     if (closed) {
       // 执行器已经关闭
@@ -220,7 +269,8 @@ public abstract class BaseExecutor implements Executor {
   }
 
   @Override
-  public void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType) {
+  public void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key,
+                        Class<?> targetType) {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
@@ -234,10 +284,11 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 生成查询的缓存的键
-   * @param ms 映射语句对象
+   *
+   * @param ms              映射语句对象
    * @param parameterObject 参数对象
-   * @param rowBounds 翻页限制
-   * @param boundSql 解析结束后的SQL语句
+   * @param rowBounds       翻页限制
+   * @param boundSql        解析结束后的SQL语句
    * @return 生成的键值
    */
   @Override
@@ -312,22 +363,20 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public void clearLocalCache() {
     if (!closed) {
-      localCache.clear();
+      localCache.clear(); // 清空缓存
       localOutputParameterCache.clear();
     }
   }
 
-  protected abstract int doUpdate(MappedStatement ms, Object parameter)
-      throws SQLException;
+  protected abstract int doUpdate(MappedStatement ms, Object parameter) throws SQLException;
 
-  protected abstract List<BatchResult> doFlushStatements(boolean isRollback)
-      throws SQLException;
+  protected abstract List<BatchResult> doFlushStatements(boolean isRollback) throws SQLException;
 
-  protected abstract <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)
-      throws SQLException;
+  protected abstract <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                         ResultHandler resultHandler, BoundSql boundSql) throws SQLException;
 
-  protected abstract <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)
-      throws SQLException;
+  protected abstract <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                                 BoundSql boundSql) throws SQLException;
 
   protected void closeStatement(Statement statement) {
     if (statement != null) {
@@ -341,16 +390,18 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * Apply a transaction timeout.
+   *
    * @param statement a current statement
    * @throws SQLException if a database access error occurs, this method is called on a closed <code>Statement</code>
-   * @since 3.4.0
    * @see StatementUtil#applyTransactionTimeout(Statement, Integer, Integer)
+   * @since 3.4.0
    */
   protected void applyTransactionTimeout(Statement statement) throws SQLException {
     StatementUtil.applyTransactionTimeout(statement, statement.getQueryTimeout(), transaction.getTimeout());
   }
 
-  private void handleLocallyCachedOutputParameters(MappedStatement ms, CacheKey key, Object parameter, BoundSql boundSql) {
+  private void handleLocallyCachedOutputParameters(MappedStatement ms, CacheKey key, Object parameter,
+                                                   BoundSql boundSql) {
     if (ms.getStatementType() == StatementType.CALLABLE) {
       final Object cachedParameter = localOutputParameterCache.getObject(key);
       if (cachedParameter != null && parameter != null) {
@@ -369,17 +420,20 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 从数据库中查询结果
-   * @param ms 映射语句
-   * @param parameter 参数对象
-   * @param rowBounds 翻页限制条件
+   *
+   * @param ms            映射语句
+   * @param parameter     参数对象
+   * @param rowBounds     翻页限制条件
    * @param resultHandler 结果处理器
-   * @param key 缓存的键
-   * @param boundSql 查询语句
-   * @param <E> 结果类型
+   * @param key           缓存的键
+   * @param boundSql      查询语句
+   * @param <E>           结果类型
    * @return 结果列表
    * @throws SQLException
    */
-  private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+  private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                        ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+    throws SQLException {
     List<E> list;
     // 向缓存中增加占位符，表示正在查询
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
@@ -399,6 +453,7 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 获取一个Connection对象
+   *
    * @param statementLog 日志对象
    * @return Connection对象
    * @throws SQLException
@@ -430,12 +485,8 @@ public abstract class BaseExecutor implements Executor {
     private final ResultExtractor resultExtractor;
 
     // issue #781
-    public DeferredLoad(MetaObject resultObject,
-                        String property,
-                        CacheKey key,
-                        PerpetualCache localCache,
-                        Configuration configuration,
-                        Class<?> targetType) {
+    public DeferredLoad(MetaObject resultObject, String property, CacheKey key, PerpetualCache localCache,
+                        Configuration configuration, Class<?> targetType) {
       this.resultObject = resultObject;
       this.property = property;
       this.key = key;

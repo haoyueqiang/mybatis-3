@@ -36,14 +36,40 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
   // 构造方法中传入的SqlSessionFactory对象
   private final SqlSessionFactory sqlSessionFactory;
+
   // 在构造方法中创建的SqlSession代理对象
   private final SqlSession sqlSessionProxy;
+
   // 该变量用来存储被代理的SqlSession对象
   private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<>();
 
   /**
    * SqlSessionManager构造方法
    * @param sqlSessionFactory SqlSession工厂
+   *
+   * 在 MyBatis 中，SqlSessionManager 是一个管理 SqlSession 生命周期的类。在你提供的代码片段中，
+   *  SqlSessionManager 的构造方法接收一个 SqlSessionFactory 实例，并使用它来创建一个 SqlSession 的代理实例。这种做法有几个好处：
+   *
+   * 控制反转（IoC）：
+   * 通过将 SqlSessionFactory 作为参数传入，SqlSessionManager 不再需要自己创建或查找 SqlSessionFactory 的实例。这符合控制反转的原则，即对象的创建和生命周期由外部控制，而不是由对象自身管理。
+   *
+   * 灵活性和可配置性：
+   * 允许外部传入 SqlSessionFactory 使得 SqlSessionManager 更加灵活。不同的环境或配置可能需要不同的 SqlSessionFactory 实例，通过传入参数，可以轻松地适应这些变化。
+   *
+   * 单一职责原则：
+   * SqlSessionManager 专注于管理 SqlSession 的生命周期，而不涉及 SqlSessionFactory 的创建。这样，每个类都只关注一个职责，使得代码更加清晰和易于维护。
+   *
+   * 代理模式：
+   * 使用 Proxy.newProxyInstance 创建 SqlSession 的代理实例，这是一种设计模式的应用。代理模式可以在不修改原始类代码的情况下，增加额外的功能，比如事务管理、日志记录等。
+   *
+   * 事务管理：
+   * SqlSessionInterceptor 可能是一个拦截器，用于处理 SqlSession 的事务。通过代理模式，可以在 SqlSession 操作前后添加额外的逻辑，比如开启和提交事务，而不需要修改 SqlSession 的实现。
+   *
+   * 解耦：
+   * 将 SqlSessionFactory 作为参数传入，而不是在 SqlSessionManager 内部创建，可以减少类之间的依赖关系。这样，如果 SqlSessionFactory 的实现发生变化，只需要修改传入的实例，而不需要修改 SqlSessionManager 的代码。
+   *
+   * 测试友好：
+   * 通过外部传入 SqlSessionFactory，可以更容易地对 SqlSessionManager 进行单元测试。测试时可以传入 mock 或 stub 的 SqlSessionFactory 实例，以验证 SqlSessionManager 的行为。
    */
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {
     this.sqlSessionFactory = sqlSessionFactory;
@@ -82,7 +108,8 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
   }
 
   public void startManagedSession() {
-    this.localSqlSession.set(openSession());
+    // 本地线程 该变量用来存储被代理的SqlSession对象
+    this.localSqlSession.set(openSession()); // 打开session，通过SqlFactory工厂返回SqlSession
   }
 
   public void startManagedSession(boolean autoCommit) {
@@ -187,76 +214,91 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
     return sqlSessionProxy.selectMap(statement, parameter, mapKey, rowBounds);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <T> Cursor<T> selectCursor(String statement) {
     return sqlSessionProxy.selectCursor(statement);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <T> Cursor<T> selectCursor(String statement, Object parameter) {
     return sqlSessionProxy.selectCursor(statement, parameter);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <T> Cursor<T> selectCursor(String statement, Object parameter, RowBounds rowBounds) {
     return sqlSessionProxy.selectCursor(statement, parameter, rowBounds);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <E> List<E> selectList(String statement) {
     return sqlSessionProxy.selectList(statement);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <E> List<E> selectList(String statement, Object parameter) {
     return sqlSessionProxy.selectList(statement, parameter);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     return sqlSessionProxy.selectList(statement, parameter, rowBounds);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public void select(String statement, ResultHandler handler) {
     sqlSessionProxy.select(statement, handler);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public void select(String statement, Object parameter, ResultHandler handler) {
     sqlSessionProxy.select(statement, parameter, handler);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public void select(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     sqlSessionProxy.select(statement, parameter, rowBounds, handler);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int insert(String statement) {
     return sqlSessionProxy.insert(statement);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int insert(String statement, Object parameter) {
     return sqlSessionProxy.insert(statement, parameter);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int update(String statement) {
     return sqlSessionProxy.update(statement);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int update(String statement, Object parameter) {
     return sqlSessionProxy.update(statement, parameter);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int delete(String statement) {
     return sqlSessionProxy.delete(statement);
   }
 
+  // 通过 Mapper 代理对象，执行数据库操作。
   @Override
   public int delete(String statement, Object parameter) {
     return sqlSessionProxy.delete(statement, parameter);
@@ -332,7 +374,7 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
   @Override
   public void close() {
-    final SqlSession sqlSession = localSqlSession.get();
+    final SqlSession sqlSession = localSqlSession.get(); // 获取线程中存储的SqlSession
     if (sqlSession == null) {
       throw new SqlSessionException("Error:  Cannot close.  No managed session is started.");
     }
