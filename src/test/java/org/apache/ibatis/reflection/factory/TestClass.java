@@ -13,14 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.session;
+package org.apache.ibatis.reflection.factory;
 
 /**
- * @author Clinton Begin
+ * TestClass
+ *
+ * @author Ryan Lamore
  */
-public enum ExecutorType {
+public class TestClass {
+  String myString;
+  Integer myInteger;
 
-  SIMPLE, // 为每个语句创建新的预处理语句
-  REUSE,  // 复用
-  BATCH   // 执行批量操作
+  public TestClass(String myString, Integer myInteger) {
+    this.myString = myString;
+    this.myInteger = myInteger;
+  }
 }

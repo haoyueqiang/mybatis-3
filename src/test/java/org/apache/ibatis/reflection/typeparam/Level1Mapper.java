@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2016 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,14 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.session;
+package org.apache.ibatis.reflection.typeparam;
 
-/**
- * @author Clinton Begin
- */
-public enum ExecutorType {
-
-  SIMPLE, // 为每个语句创建新的预处理语句
-  REUSE,  // 复用
-  BATCH   // 执行批量操作
+public interface Level1Mapper<E, F> extends Level0Mapper<E, F, String> {
 }

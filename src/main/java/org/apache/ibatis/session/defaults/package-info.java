@@ -13,14 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.session;
-
 /**
- * @author Clinton Begin
+ * Default impl for SqlSession.
  */
-public enum ExecutorType {
-
-  SIMPLE, // 为每个语句创建新的预处理语句
-  REUSE,  // 复用
-  BATCH   // 执行批量操作
-}
+package org.apache.ibatis.session.defaults;

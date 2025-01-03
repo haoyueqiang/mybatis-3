@@ -13,14 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.session;
+package org.apache.ibatis.binding;
 
-/**
- * @author Clinton Begin
- */
-public enum ExecutorType {
+import org.apache.ibatis.jdbc.SQL;
 
-  SIMPLE, // 为每个语句创建新的预处理语句
-  REUSE,  // 复用
-  BATCH   // 执行批量操作
+public class BoundBlogSql {
+
+  public String selectBlogsSql() {
+    return new SQL() {
+      {
+        SELECT("*");
+        FROM("BLOG");
+      }
+    }.toString();
+  }
+
 }
