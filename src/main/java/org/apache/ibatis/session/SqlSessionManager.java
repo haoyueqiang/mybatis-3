@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.executor.BatchResult;
+import org.apache.ibatis.executor_SQL执行_执行器.BatchResult;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**

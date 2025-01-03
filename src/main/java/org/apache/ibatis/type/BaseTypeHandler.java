@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.ibatis.executor.result.ResultMapException;
+import org.apache.ibatis.executor_SQL执行_执行器.result.ResultMapException;
 import org.apache.ibatis.session.Configuration;
 
 /**

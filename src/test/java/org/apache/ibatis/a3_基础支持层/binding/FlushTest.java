@@ -19,7 +19,7 @@ import org.apache.ibatis.BaseDataTest;
 import org.apache.ibatis.domain.blog.Author;
 import org.apache.ibatis.domain.blog.Post;
 import org.apache.ibatis.domain.blog.Section;
-import org.apache.ibatis.executor.BatchResult;
+import org.apache.ibatis.executor_SQL执行_执行器.BatchResult;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.*;
 import org.apache.ibatis.transaction.TransactionFactory;

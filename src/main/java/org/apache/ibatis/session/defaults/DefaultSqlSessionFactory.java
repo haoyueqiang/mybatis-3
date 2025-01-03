@@ -19,8 +19,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.ibatis.exceptions.ExceptionFactory;
-import org.apache.ibatis.executor.ErrorContext;
-import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor_SQL执行_执行器.ErrorContext;
+import org.apache.ibatis.executor_SQL执行_执行器.Executor;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.executor.BatchResult;
+import org.apache.ibatis.executor_SQL执行_执行器.BatchResult;
 
 /**
  * The primary Java interface for working with MyBatis.

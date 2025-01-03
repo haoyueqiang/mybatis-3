@@ -15,7 +15,7 @@
  */
 package org.apache.ibatis.exceptions;
 
-import org.apache.ibatis.executor.ErrorContext;
+import org.apache.ibatis.executor_SQL执行_执行器.ErrorContext;
 
 /**
  * @author Clinton Begin

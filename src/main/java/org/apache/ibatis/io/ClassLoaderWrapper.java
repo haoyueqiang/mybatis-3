@@ -28,7 +28,7 @@ public class ClassLoaderWrapper {
   ClassLoader defaultClassLoader;
   ClassLoader systemClassLoader;
 
-  ClassLoaderWrapper() {
+  public ClassLoaderWrapper() {
     try {
       systemClassLoader = ClassLoader.getSystemClassLoader();
     } catch (SecurityException ignored) {
