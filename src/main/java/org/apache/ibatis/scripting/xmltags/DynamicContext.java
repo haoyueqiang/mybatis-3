@@ -152,6 +152,7 @@ public class DynamicContext {
 
   static class ContextAccessor implements PropertyAccessor {
 
+    // getProperty() : 用于获取<if>标签中的值
     @Override
     public Object getProperty(Map context, Object target, Object name) {
       Map map = (Map) target;
